@@ -12,11 +12,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * Scheduler service.
- *
- * @author yurun
- */
+/** Scheduler service. */
 public class CosmosClient implements CosmosService {
   private static final Logger LOGGER = LoggerFactory.getLogger(CosmosClient.class);
 

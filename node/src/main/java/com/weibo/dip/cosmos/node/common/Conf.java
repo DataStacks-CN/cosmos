@@ -6,7 +6,7 @@ package com.weibo.dip.cosmos.node.common;
  * @author yurun
  */
 public class Conf {
-  public static final String SCHEDULER_PROPERTIES = "node.properties";
+  public static final String COSMOS_PROPERTIES = "cosmos.properties";
 
   public static final String OPTION_START = "start";
   public static final String OPTION_UPDATE = "update";
