@@ -1,6 +1,5 @@
 package com.weibo.dip.cosmos.node.db;
 
-import com.weibo.dip.cosmos.common.Symbols;
 import com.weibo.dip.cosmos.model.Application;
 import com.weibo.dip.cosmos.model.ApplicationDependency;
 import com.weibo.dip.cosmos.model.ApplicationRecord;
@@ -8,6 +7,7 @@ import com.weibo.dip.cosmos.model.ApplicationState;
 import com.weibo.dip.cosmos.node.db.handler.ApplicationDependencyHandler;
 import com.weibo.dip.cosmos.node.db.handler.ApplicationHandler;
 import com.weibo.dip.cosmos.node.db.handler.ApplicationRecordHandler;
+import com.weibo.dip.durian.Symbols;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
@@ -18,11 +18,7 @@ import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
-/**
- * Scheduler db operator.
- *
- * @author yurun
- */
+/** Scheduler db operator. */
 public class SchedulerOperator {
   private QueryRunner queryRunner;
 

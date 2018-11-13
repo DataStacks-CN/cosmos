@@ -14,11 +14,11 @@ min_heap_size = '256'
 max_heap_size = '1024'
 
 classpaths = [
-              '/data0/workspace/hubble/scheduler/conf/',
-              '/data0/workspace/hubble/scheduler/target/hubble-scheduler-0.0.1-SNAPSHOT.jar',
-              '/data0/workspace/hubble/scheduler/target/hubble-scheduler-0.0.1-SNAPSHOT-lib/*']
+              '/data0/workspace/cosmos/conf/',
+              '/data0/workspace/cosmos/node/target/cosmos-node-0.1.jar',
+              '/data0/workspace/cosmos/node/target/cosmos-node-0.1-lib/*']
 
-main_class = 'com.weibo.dip.cosmos.node.SchedulerMain'
+main_class = 'com.weibo.dip.cosmos.node.NodeManager'
 
 running = "running"
 

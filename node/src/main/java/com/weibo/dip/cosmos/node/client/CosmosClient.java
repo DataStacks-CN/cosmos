@@ -1,43 +1,43 @@
 package com.weibo.dip.cosmos.node.client;
 
 import com.caucho.hessian.client.HessianProxyFactory;
-import com.weibo.dip.cosmos.client.SchedulerService;
 import com.weibo.dip.cosmos.model.Application;
 import com.weibo.dip.cosmos.model.ApplicationDependency;
 import com.weibo.dip.cosmos.model.ApplicationRecord;
 import com.weibo.dip.cosmos.model.Message;
 import com.weibo.dip.cosmos.model.ScheduleApplication;
+import com.weibo.dip.cosmos.service.CosmosService;
 import java.util.Date;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Scheduler client.
+ * Scheduler service.
  *
  * @author yurun
  */
-public class SchedulerClient implements SchedulerService {
-  private static final Logger LOGGER = LoggerFactory.getLogger(SchedulerClient.class);
+public class CosmosClient implements CosmosService {
+  private static final Logger LOGGER = LoggerFactory.getLogger(CosmosClient.class);
 
-  private SchedulerService schedulerService;
+  private CosmosService schedulerService;
 
   /**
-   * Construct a node client instance.
+   * Construct a node service instance.
    *
    * @param host node server hostname
    * @param port node server port
    * @throws Exception if create proxy error
    */
-  public SchedulerClient(String host, int port) throws Exception {
+  public CosmosClient(String host, int port) throws Exception {
     HessianProxyFactory proxyFactory = new HessianProxyFactory();
 
     proxyFactory.setOverloadEnabled(true);
 
     schedulerService =
-        (SchedulerService)
+        (CosmosService)
             proxyFactory.create(
-                SchedulerService.class, "http://" + host + ":" + port + "/service/node");
+                CosmosService.class, "http://" + host + ":" + port + "/service/node");
   }
 
   @Override

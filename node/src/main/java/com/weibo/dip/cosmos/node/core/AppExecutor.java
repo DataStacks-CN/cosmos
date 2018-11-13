@@ -10,10 +10,6 @@ import com.github.dockerjava.core.DockerClientBuilder;
 import com.github.dockerjava.core.command.LogContainerResultCallback;
 import com.github.dockerjava.core.command.PullImageResultCallback;
 import com.google.common.base.Preconditions;
-import com.weibo.dip.cosmos.common.ClasspathProperties;
-import com.weibo.dip.cosmos.common.Symbols;
-import com.weibo.dip.cosmos.common.util.DatetimeUtil;
-import com.weibo.dip.cosmos.common.util.GsonUtil;
 import com.weibo.dip.cosmos.model.Application;
 import com.weibo.dip.cosmos.model.ApplicationDependency;
 import com.weibo.dip.cosmos.model.ApplicationRecord;
@@ -22,6 +18,10 @@ import com.weibo.dip.cosmos.model.Message;
 import com.weibo.dip.cosmos.model.ScheduleApplication;
 import com.weibo.dip.cosmos.node.db.SchedulerOperator;
 import com.weibo.dip.cosmos.node.queue.MessageQueue;
+import com.weibo.dip.durian.ClasspathProperties;
+import com.weibo.dip.durian.Symbols;
+import com.weibo.dip.durian.util.DatetimeUtil;
+import com.weibo.dip.durian.util.GsonUtil;
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
@@ -594,9 +594,9 @@ public class AppExecutor {
     public void run() {
       LOGGER.info("Application {} begin to run", scheduleApplication.getUniqeName());
 
-      // docker client
+      // docker service
       dockerClient = DockerClientBuilder.getInstance().build();
-      LOGGER.info("Application {} docker client builded", scheduleApplication.getUniqeName());
+      LOGGER.info("Application {} docker service builded", scheduleApplication.getUniqeName());
 
       try {
         updateScheduleApplicationState(scheduleApplication, ApplicationState.RUNNING);
@@ -643,10 +643,10 @@ public class AppExecutor {
 
         try {
           dockerClient.close();
-          LOGGER.info("Application {} docker client closed", scheduleApplication.getUniqeName());
+          LOGGER.info("Application {} docker service closed", scheduleApplication.getUniqeName());
         } catch (IOException e) {
           LOGGER.error(
-              "Applicatioin {} docker client close error: {}",
+              "Applicatioin {} docker service close error: {}",
               scheduleApplication.getUniqeName(),
               ExceptionUtils.getStackTrace(e));
         }

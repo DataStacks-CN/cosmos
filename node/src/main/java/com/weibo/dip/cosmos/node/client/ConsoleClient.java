@@ -4,9 +4,6 @@ import com.google.common.base.Preconditions;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.weibo.dip.cosmos.common.ClasspathProperties;
-import com.weibo.dip.cosmos.common.Symbols;
-import com.weibo.dip.cosmos.common.util.GsonUtil;
 import com.weibo.dip.cosmos.model.Application;
 import com.weibo.dip.cosmos.model.ApplicationDependency;
 import com.weibo.dip.cosmos.model.ApplicationRecord;
@@ -15,6 +12,9 @@ import com.weibo.dip.cosmos.model.Message;
 import com.weibo.dip.cosmos.model.ScheduleApplication;
 import com.weibo.dip.cosmos.node.common.Conf;
 import com.weibo.dip.cosmos.node.util.ConsoleTable;
+import com.weibo.dip.durian.ClasspathProperties;
+import com.weibo.dip.durian.Symbols;
+import com.weibo.dip.durian.util.GsonUtil;
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -33,12 +33,8 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 
-/**
- * Console node client.
- *
- * @author yurun
- */
-public class ConsoleSchedulerClient {
+/** Console node service. */
+public class ConsoleClient {
   private static final ClasspathProperties PROPERTIES;
 
   static {
@@ -49,7 +45,7 @@ public class ConsoleSchedulerClient {
     }
   }
 
-  private static SchedulerClient getClient() throws Exception {
+  private static CosmosClient getClient() throws Exception {
     String[] hosts = PROPERTIES.getString("server.hosts").split(Symbols.COMMA);
     Preconditions.checkState(
         ArrayUtils.isNotEmpty(hosts), "server.hosts must be specified in node.properties");
@@ -57,7 +53,7 @@ public class ConsoleSchedulerClient {
     int port = PROPERTIES.getInt("server.port");
 
     for (String host : hosts) {
-      SchedulerClient client = new SchedulerClient(host, port);
+      CosmosClient client = new CosmosClient(host, port);
 
       if (client.connect()) {
         return client;
@@ -193,7 +189,7 @@ public class ConsoleSchedulerClient {
       return;
     }
 
-    SchedulerClient client = getClient();
+    CosmosClient client = getClient();
 
     assert Objects.nonNull(client);
 
@@ -587,7 +583,7 @@ public class ConsoleSchedulerClient {
         String host = record.getHost();
         int port = Integer.valueOf(PROPERTIES.getString("server.port"));
 
-        SchedulerClient targetClient = new SchedulerClient(host, port);
+        CosmosClient targetClient = new CosmosClient(host, port);
 
         if (targetClient.kill(name, queue, scheduleTime)) {
           flag = true;

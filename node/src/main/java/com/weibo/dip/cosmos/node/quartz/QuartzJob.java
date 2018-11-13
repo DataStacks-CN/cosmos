@@ -1,8 +1,5 @@
 package com.weibo.dip.cosmos.node.quartz;
 
-import com.weibo.dip.cosmos.common.GlobalResource;
-import com.weibo.dip.cosmos.common.util.GsonUtil;
-import com.weibo.dip.cosmos.common.util.IPUtil;
 import com.weibo.dip.cosmos.model.Application;
 import com.weibo.dip.cosmos.model.ApplicationRecord;
 import com.weibo.dip.cosmos.model.ApplicationState;
@@ -10,6 +7,9 @@ import com.weibo.dip.cosmos.model.ScheduleApplication;
 import com.weibo.dip.cosmos.node.db.SchedulerDataSource;
 import com.weibo.dip.cosmos.node.db.SchedulerOperator;
 import com.weibo.dip.cosmos.node.queue.MessageQueue;
+import com.weibo.dip.durian.GlobalResource;
+import com.weibo.dip.durian.util.GsonUtil;
+import com.weibo.dip.durian.util.IpUtil;
 import java.util.Date;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.quartz.Job;
@@ -54,7 +54,7 @@ public class QuartzJob implements Job {
           new ApplicationRecord(
               application.getName(),
               application.getQueue(),
-              IPUtil.getLocalhost(),
+              IpUtil.getLocalhost(),
               scheduleTime,
               executeTime,
               ApplicationState.QUEUED);

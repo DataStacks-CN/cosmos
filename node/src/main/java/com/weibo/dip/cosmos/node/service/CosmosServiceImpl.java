@@ -5,9 +5,6 @@ import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.model.Container;
 import com.github.dockerjava.core.DockerClientBuilder;
 import com.google.common.base.Preconditions;
-import com.weibo.dip.cosmos.client.SchedulerService;
-import com.weibo.dip.cosmos.common.util.GsonUtil;
-import com.weibo.dip.cosmos.common.util.IPUtil;
 import com.weibo.dip.cosmos.model.Application;
 import com.weibo.dip.cosmos.model.ApplicationDependency;
 import com.weibo.dip.cosmos.model.ApplicationRecord;
@@ -17,6 +14,9 @@ import com.weibo.dip.cosmos.model.ScheduleApplication;
 import com.weibo.dip.cosmos.node.db.SchedulerOperator;
 import com.weibo.dip.cosmos.node.quartz.QuartzJob;
 import com.weibo.dip.cosmos.node.queue.MessageQueue;
+import com.weibo.dip.cosmos.service.CosmosService;
+import com.weibo.dip.durian.util.GsonUtil;
+import com.weibo.dip.durian.util.IpUtil;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -45,8 +45,8 @@ import org.slf4j.LoggerFactory;
  *
  * @author yurun
  */
-public class SchedulerServiceImpl extends HessianServlet implements SchedulerService {
-  private static final Logger LOGGER = LoggerFactory.getLogger(SchedulerServiceImpl.class);
+public class CosmosServiceImpl extends HessianServlet implements CosmosService {
+  private static final Logger LOGGER = LoggerFactory.getLogger(CosmosServiceImpl.class);
 
   private MessageQueue queue;
   private Scheduler scheduler;
@@ -59,7 +59,7 @@ public class SchedulerServiceImpl extends HessianServlet implements SchedulerSer
    * @param scheduler Scheduler
    * @param operator SchedulerOperator
    */
-  public SchedulerServiceImpl(MessageQueue queue, Scheduler scheduler, SchedulerOperator operator) {
+  public CosmosServiceImpl(MessageQueue queue, Scheduler scheduler, SchedulerOperator operator) {
     this.queue = queue;
     this.scheduler = scheduler;
     this.operator = operator;
@@ -308,7 +308,7 @@ public class SchedulerServiceImpl extends HessianServlet implements SchedulerSer
             new ApplicationRecord(
                 application.getName(),
                 application.getQueue(),
-                IPUtil.getLocalhost(),
+                IpUtil.getLocalhost(),
                 fireTime,
                 now,
                 ApplicationState.QUEUED);
@@ -365,9 +365,7 @@ public class SchedulerServiceImpl extends HessianServlet implements SchedulerSer
 
     String containerName = record.getUniqeName();
 
-    DockerClient dockerClient = DockerClientBuilder.getInstance().build();
-
-    try {
+    try (DockerClient dockerClient = DockerClientBuilder.getInstance().build()) {
       List<Container> containers =
           dockerClient
               .listContainersCmd()
@@ -378,8 +376,6 @@ public class SchedulerServiceImpl extends HessianServlet implements SchedulerSer
       }
 
       dockerClient.killContainerCmd(containers.get(0).getId()).exec();
-    } finally {
-      dockerClient.close();
     }
 
     return true;

@@ -1,4 +1,4 @@
-package com.weibo.dip.cosmos.client;
+package com.weibo.dip.cosmos.service;
 
 import com.weibo.dip.cosmos.model.Application;
 import com.weibo.dip.cosmos.model.ApplicationDependency;
@@ -8,12 +8,8 @@ import com.weibo.dip.cosmos.model.ScheduleApplication;
 import java.util.Date;
 import java.util.List;
 
-/**
- * Schedler Service.
- *
- * @author yurun
- */
-public interface SchedulerService {
+/** Cosmos Service. */
+public interface CosmosService {
   boolean connect();
 
   void start(Application application) throws Exception;
