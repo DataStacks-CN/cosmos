@@ -18,7 +18,7 @@ classpaths = [
               '/data0/workspace/hubble/scheduler/target/hubble-scheduler-0.0.1-SNAPSHOT.jar',
               '/data0/workspace/hubble/scheduler/target/hubble-scheduler-0.0.1-SNAPSHOT-lib/*']
 
-main_class = 'com.weibo.dip.hubble.scheduler.SchedulerMain'
+main_class = 'com.weibo.dip.cosmos.node.SchedulerMain'
 
 running = "running"
 

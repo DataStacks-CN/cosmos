@@ -12,6 +12,13 @@
   <artifactId>cosmos-node</artifactId>
 
   <dependencies>
+    <!-- cosmos-client -->
+    <dependency>
+      <groupId>com.weibo.dip</groupId>
+      <artifactId>cosmos-client</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
     <!-- commons -->
     <dependency>
       <groupId>commons-cli</groupId>

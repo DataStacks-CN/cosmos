@@ -12,7 +12,7 @@ classpaths = [
               '/data0/workspace/hubble/scheduler/target/hubble-scheduler-0.0.1-SNAPSHOT.jar',
               '/data0/workspace/hubble/scheduler/target/hubble-scheduler-0.0.1-SNAPSHOT-lib/*']
 
-main_class = 'com.weibo.dip.hubble.scheduler.client.ConsoleSchedulerClient'
+main_class = 'com.weibo.dip.cosmos.node.client.ConsoleSchedulerClient'
 
 if __name__ == '__main__':
     command = 'sudo -u %s %s/bin/java -cp %s %s %s' % (user, java_home, ':'.join(classpaths), main_class, ' '.join(sys.argv[1:]))
