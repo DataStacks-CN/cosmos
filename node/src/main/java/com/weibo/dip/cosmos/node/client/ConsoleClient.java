@@ -39,7 +39,7 @@ public class ConsoleClient {
 
   static {
     try {
-      PROPERTIES = new ClasspathProperties(Conf.SCHEDULER_PROPERTIES);
+      PROPERTIES = new ClasspathProperties(Conf.COSMOS_PROPERTIES);
     } catch (Exception e) {
       throw new ExceptionInInitializerError(e);
     }

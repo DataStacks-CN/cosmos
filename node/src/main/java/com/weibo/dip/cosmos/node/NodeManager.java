@@ -52,8 +52,8 @@ public class NodeManager {
    */
   public static void main(String[] args) throws Exception {
     // classpath properties
-    ClasspathProperties properties = new ClasspathProperties(Conf.SCHEDULER_PROPERTIES);
-    LOGGER.info("Classpath properties {} loaded", Conf.SCHEDULER_PROPERTIES);
+    ClasspathProperties properties = new ClasspathProperties(Conf.COSMOS_PROPERTIES);
+    LOGGER.info("Classpath properties {} loaded", Conf.COSMOS_PROPERTIES);
 
     // datasource
     SchedulerDataSourceFactory dataSourceFactory = new SchedulerDataSourceFactory();
