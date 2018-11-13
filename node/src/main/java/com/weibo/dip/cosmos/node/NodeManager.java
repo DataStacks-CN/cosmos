@@ -1,14 +1,14 @@
 package com.weibo.dip.cosmos.node;
 
-import com.weibo.dip.cosmos.common.ClasspathProperties;
-import com.weibo.dip.cosmos.common.GlobalResource;
 import com.weibo.dip.cosmos.node.common.Conf;
 import com.weibo.dip.cosmos.node.core.AppExecutor;
 import com.weibo.dip.cosmos.node.db.SchedulerDataSource;
 import com.weibo.dip.cosmos.node.db.SchedulerDataSourceFactory;
 import com.weibo.dip.cosmos.node.db.SchedulerOperator;
 import com.weibo.dip.cosmos.node.queue.MessageQueue;
-import com.weibo.dip.cosmos.node.service.SchedulerServiceImpl;
+import com.weibo.dip.cosmos.node.service.CosmosServiceImpl;
+import com.weibo.dip.durian.ClasspathProperties;
+import com.weibo.dip.durian.GlobalResource;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
@@ -23,8 +23,8 @@ import org.slf4j.LoggerFactory;
  *
  * @author yurun
  */
-public class SchedulerMain {
-  private static final Logger LOGGER = LoggerFactory.getLogger(SchedulerMain.class);
+public class NodeManager {
+  private static final Logger LOGGER = LoggerFactory.getLogger(NodeManager.class);
 
   /**
    * Main.
@@ -90,7 +90,7 @@ public class SchedulerMain {
     ServletContextHandler handler = new ServletContextHandler(ServletContextHandler.SESSIONS);
 
     handler.addServlet(
-        new ServletHolder(new SchedulerServiceImpl(queue, scheduler, operator)),
+        new ServletHolder(new CosmosServiceImpl(queue, scheduler, operator)),
         "/service/node");
 
     server.setHandler(handler);

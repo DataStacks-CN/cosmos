@@ -1,7 +1,7 @@
 package com.weibo.dip.cosmos.node.db.handler;
 
-import com.weibo.dip.cosmos.common.Symbols;
 import com.weibo.dip.cosmos.model.Application;
+import com.weibo.dip.durian.Symbols;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;

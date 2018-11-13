@@ -1,7 +1,7 @@
 package com.weibo.dip.cosmos.node.db;
 
 import com.mchange.v2.c3p0.ComboPooledDataSource;
-import com.weibo.dip.cosmos.common.ClasspathProperties;
+import com.weibo.dip.durian.ClasspathProperties;
 
 /**
  * Scheduler datasource factory.
