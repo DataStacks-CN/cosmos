@@ -7,7 +7,7 @@
   <groupId>com.weibo.dip</groupId>
   <artifactId>cosmos</artifactId>
   <packaging>pom</packaging>
-  <version>0.1</version>
+  <version>0.1.1</version>
   <modules>
     <module>client</module>
     <module>node</module>
@@ -41,6 +41,10 @@
     <c3p0.version>0.9.5.2</c3p0.version>
     <docker-java.version>3.1.0-rc-3</docker-java.version>
     <java.version>1.8</java.version>
+    <compiler.version>3.1</compiler.version>
+    <assembly.version>2.4</assembly.version>
+    <checkstyle.version>3.0.0</checkstyle.version>
+    <release.version>2.5.3</release.version>
   </properties>
 
   <dependencyManagement>
@@ -184,7 +188,7 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-compiler-plugin</artifactId>
-          <version>3.1</version>
+          <version>${compiler.version}</version>
           <configuration>
             <source>${java.version}</source>
             <target>${java.version}</target>
@@ -195,7 +199,7 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-assembly-plugin</artifactId>
-          <version>2.4</version>
+          <version>${assembly.version}</version>
           <configuration>
             <descriptors>
               <descriptor>src/main/resources/assembly.xml</descriptor>
@@ -216,7 +220,7 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-checkstyle-plugin</artifactId>
-          <version>3.0.0</version>
+          <version>${checkstyle.version}</version>
           <dependencies>
             <dependency>
               <groupId>com.puppycrawl.tools</groupId>
@@ -241,6 +245,12 @@
               </goals>
             </execution>
           </executions>
+        </plugin>
+
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-release-plugin</artifactId>
+          <version>${release.version}</version>
         </plugin>
       </plugins>
     </pluginManagement>
