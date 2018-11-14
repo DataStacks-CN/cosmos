@@ -4,6 +4,23 @@ import argparse
 import os
 import commands
 
+
+def get_jars(dir_path):
+    jars = []
+
+    if os.path.exists(dir_path):
+        for name in os.listdir(dir_path):
+            file_path = os.path.join(dir_path, name)
+
+            if os.path.isfile(file_path):
+                if file_path.endswith(".jar"):
+                    jars.append(file_path)
+            elif os.path.isdir(file_path):
+                jars.extend(get_jars(file_path))
+
+    return jars
+
+
 user = 'root'
 
 java_home = '/usr/java/default'
@@ -13,10 +30,12 @@ system_properties = {}
 min_heap_size = '256'
 max_heap_size = '1024'
 
-classpaths = [
-              '/data0/workspace/cosmos/conf/',
-              '/data0/workspace/cosmos/node/target/cosmos-node-0.1.jar',
-              '/data0/workspace/cosmos/node/target/cosmos-node-0.1-lib/*']
+project_home = '/data0/workspace/cosmos'
+
+module_home = project_home + '/node'
+
+classpaths = [project_home + '/conf']
+classpaths.extend(get_jars(module_home))
 
 main_class = 'com.weibo.dip.cosmos.node.NodeManager'
 
@@ -37,7 +56,7 @@ def start():
         dparams.append('-D%s=%s' % (key, value))
 
     command = 'sudo -u %s %s/bin/java %s -cp %s %s >> /dev/null 2>&1 &' % (
-    user, java_home, ' '.join(dparams), ':'.join(classpaths), main_class)
+        user, java_home, ' '.join(dparams), ':'.join(classpaths), main_class)
 
     print command
 
@@ -45,7 +64,8 @@ def start():
 
 
 def getPID():
-    command = "ps aux | grep %s | grep '%s' | grep -v sudo | grep -v grep | awk '{print $2}'" % (user, main_class)
+    command = "ps aux | grep %s | grep '%s' | grep -v sudo | grep -v grep | awk '{print $2}'" % (
+        user, main_class)
 
     print command
 
@@ -57,7 +77,7 @@ def status():
 
     if pid:
         print pid
-        
+
         return running
     else:
         return stoped
