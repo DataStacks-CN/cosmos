@@ -517,6 +517,7 @@ public class AppExecutor {
                       + Symbols.COLON
                       + scheduleApplication.getTag())
               .withName(scheduleApplication.getUniqeName())
+              .withNetworkMode("host")
               .withCpuShares(scheduleApplication.getCores() * DEFAULT_CPU_SHARES)
               .withMemory(scheduleApplication.getMems() * 1024 * 1024L)
               .withBinds(Bind.parse(containerLog + Symbols.COLON + containerLog))
