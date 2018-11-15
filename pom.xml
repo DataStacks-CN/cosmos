@@ -39,7 +39,7 @@
     <hessian.version>4.0.51</hessian.version>
     <mysql-connector-java.version>5.1.46</mysql-connector-java.version>
     <c3p0.version>0.9.5.2</c3p0.version>
-    <docker-java.version>3.1.0-rc-3</docker-java.version>
+    <docker-java.version>3.1.0-rc-5</docker-java.version>
     <java.version>1.8</java.version>
     <compiler.version>3.1</compiler.version>
     <assembly.version>2.4</assembly.version>
