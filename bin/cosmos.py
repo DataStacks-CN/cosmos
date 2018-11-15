@@ -13,10 +13,13 @@ def get_jars(dir_path):
             file_path = os.path.join(dir_path, name)
 
             if os.path.isfile(file_path):
-                if file_path.endswith(".jar"):
+                if file_path.endswith('.jar'):
                     jars.append(file_path)
             elif os.path.isdir(file_path):
-                jars.extend(get_jars(file_path))
+                if file_path.endswith('-lib'):
+                    jars.append(file_path + '/*')
+                else:
+                    jars.extend(get_jars(file_path))
 
     return jars
 
