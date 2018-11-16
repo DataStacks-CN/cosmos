@@ -1,1 +1,7 @@
-# Cosmos：大数据场景下的分布式任务调度系统
+# Introduction to Cosmos
+
+# Key Features
+
+# Terminology
+
+# Quick Start
