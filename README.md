@@ -8,13 +8,13 @@
 
 1. Build
 
-git clone https://github.com/weibodip/cosmos.git
+   git clone https://github.com/weibodip/cosmos.git
 
-git checkout ${tag}
+   git checkout ${tag}
 
-cd cosmos
+   cd cosmos
 
-mvn clean package -pl node -am
+   mvn clean package -pl node -am
 
 2. Config
 
