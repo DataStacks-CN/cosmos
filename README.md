@@ -6,7 +6,7 @@
 
 # Quick Start
 
-1. Build
+*1. Build*
 
    git clone https://github.com/weibodip/cosmos.git
 
@@ -16,6 +16,6 @@
 
    mvn clean package -pl node -am
 
-2. Config
+*2. Config*
 
-3. Run
+*3. Run*
