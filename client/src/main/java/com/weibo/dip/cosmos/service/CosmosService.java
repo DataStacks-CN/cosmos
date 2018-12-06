@@ -45,6 +45,9 @@ public interface CosmosService {
   List<ScheduleApplication> repair(String name, String queue, Date beginTime, Date endTime)
       throws Exception;
 
+  List<ScheduleApplication> reply(String name, String queue, Date beginTime, Date endTime)
+      throws Exception;
+
   boolean deleteQueued(int id) throws Exception;
 
   boolean kill(String name, String queue, Date scheduleTime) throws Exception;

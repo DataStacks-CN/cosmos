@@ -303,7 +303,9 @@ public class CosmosServiceImpl extends HessianServlet implements CosmosService {
     for (Date fireTime : fireTimes) {
       ApplicationRecord record = operator.getApplicationRecord(name, queue, fireTime);
 
-      if (Objects.isNull(record) || !record.getState().equals(ApplicationState.SUCCESS)) {
+      if (Objects.isNull(record)
+          || record.getState().equals(ApplicationState.FAILED)
+          || record.getState().equals(ApplicationState.KILLED)) {
         ApplicationRecord applicationRecord =
             new ApplicationRecord(
                 application.getName(),
@@ -327,6 +329,62 @@ public class CosmosServiceImpl extends HessianServlet implements CosmosService {
 
         LOGGER.info("Application {} repaired", scheduleApplication.getUniqeName());
       }
+    }
+
+    return scheduleApplications;
+  }
+
+  @Override
+  public List<ScheduleApplication> reply(String name, String queue, Date beginTime, Date endTime)
+      throws Exception {
+    JobKey jobKey = new JobKey(name, queue);
+
+    Preconditions.checkState(
+        scheduler.checkExists(jobKey), "Application %s:%s does not exist", name, queue);
+
+    Application application = operator.getApplication(name, queue);
+
+    List<Date> fireTimes =
+        TriggerUtils.computeFireTimesBetween(
+            (OperableTrigger)
+                TriggerBuilder.newTrigger()
+                    .withSchedule(CronScheduleBuilder.cronSchedule(application.getCron()))
+                    .build(),
+            null,
+            beginTime, // include
+            endTime); // include
+
+    if (CollectionUtils.isEmpty(fireTimes)) {
+      return null;
+    }
+
+    List<ScheduleApplication> scheduleApplications = new ArrayList<>();
+
+    Date now = new Date();
+
+    for (Date fireTime : fireTimes) {
+      ApplicationRecord applicationRecord =
+          new ApplicationRecord(
+              application.getName(),
+              application.getQueue(),
+              IpUtil.getLocalhost(),
+              fireTime,
+              now,
+              ApplicationState.QUEUED);
+
+      ScheduleApplication scheduleApplication =
+          new ScheduleApplication(application, applicationRecord);
+
+      scheduleApplications.add(scheduleApplication);
+
+      this.queue.produce(
+          GsonUtil.toJson(scheduleApplication),
+          scheduleApplication.getQueue(),
+          scheduleApplication.getPriority(),
+          now);
+      operator.addOrUpdateApplicationRecord(applicationRecord);
+
+      LOGGER.info("Application {} replayed", scheduleApplication.getUniqeName());
     }
 
     return scheduleApplications;

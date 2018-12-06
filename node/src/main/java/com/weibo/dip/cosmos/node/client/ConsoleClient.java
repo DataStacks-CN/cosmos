@@ -31,6 +31,7 @@ import org.apache.commons.cli.ParseException;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang.CharEncoding;
 import org.apache.commons.lang.StringUtils;
 
 /** Console node service. */
@@ -196,7 +197,9 @@ public class ConsoleClient {
     if (line.hasOption(Conf.OPTION_START)) {
       String jsonPath = line.getOptionValue(Conf.OPTION_START);
 
-      String json = StringUtils.join(FileUtils.readLines(new File(jsonPath)), Symbols.NEWLINE);
+      String json =
+          StringUtils.join(
+              FileUtils.readLines(new File(jsonPath), CharEncoding.UTF_8), Symbols.NEWLINE);
 
       JsonParser jsonParser = new JsonParser();
 
@@ -230,7 +233,9 @@ public class ConsoleClient {
     } else if (line.hasOption(Conf.OPTION_UPDATE)) {
       String jsonPath = line.getOptionValue(Conf.OPTION_UPDATE);
 
-      String json = StringUtils.join(FileUtils.readLines(new File(jsonPath)), Symbols.NEWLINE);
+      String json =
+          StringUtils.join(
+              FileUtils.readLines(new File(jsonPath), CharEncoding.UTF_8), Symbols.NEWLINE);
 
       JsonParser jsonParser = new JsonParser();
 
@@ -385,7 +390,9 @@ public class ConsoleClient {
     } else if (line.hasOption(Conf.OPTION_ADD_DEPEND)) {
       String jsonPath = line.getOptionValue(Conf.OPTION_ADD_DEPEND);
 
-      String json = StringUtils.join(FileUtils.readLines(new File(jsonPath)), Symbols.NEWLINE);
+      String json =
+          StringUtils.join(
+              FileUtils.readLines(new File(jsonPath), CharEncoding.UTF_8), Symbols.NEWLINE);
 
       JsonParser jsonParser = new JsonParser();
 
@@ -414,7 +421,9 @@ public class ConsoleClient {
     } else if (line.hasOption(Conf.OPTION_REMOVE_DEPEND)) {
       String jsonPath = line.getOptionValue(Conf.OPTION_REMOVE_DEPEND);
 
-      String json = StringUtils.join(FileUtils.readLines(new File(jsonPath)), Symbols.NEWLINE);
+      String json =
+          StringUtils.join(
+              FileUtils.readLines(new File(jsonPath), CharEncoding.UTF_8), Symbols.NEWLINE);
 
       JsonParser jsonParser = new JsonParser();
 
@@ -489,7 +498,9 @@ public class ConsoleClient {
     } else if (line.hasOption(Conf.OPTION_RECORDS)) {
       String jsonPath = line.getOptionValue(Conf.OPTION_RECORDS);
 
-      String json = StringUtils.join(FileUtils.readLines(new File(jsonPath)), Symbols.NEWLINE);
+      String json =
+          StringUtils.join(
+              FileUtils.readLines(new File(jsonPath), CharEncoding.UTF_8), Symbols.NEWLINE);
 
       JsonParser jsonParser = new JsonParser();
 
@@ -525,7 +536,9 @@ public class ConsoleClient {
     } else if (line.hasOption(Conf.OPTION_REPAIR)) {
       String jsonPath = line.getOptionValue(Conf.OPTION_REPAIR);
 
-      String json = StringUtils.join(FileUtils.readLines(new File(jsonPath)), Symbols.NEWLINE);
+      String json =
+          StringUtils.join(
+              FileUtils.readLines(new File(jsonPath), CharEncoding.UTF_8), Symbols.NEWLINE);
 
       JsonParser jsonParser = new JsonParser();
 
@@ -555,6 +568,41 @@ public class ConsoleClient {
       }
 
       table.print();
+    } else if (line.hasOption(Conf.OPTION_REPLAY)) {
+      String jsonPath = line.getOptionValue(Conf.OPTION_REPLAY);
+
+      String json =
+          StringUtils.join(
+              FileUtils.readLines(new File(jsonPath), CharEncoding.UTF_8), Symbols.NEWLINE);
+
+      JsonParser jsonParser = new JsonParser();
+
+      JsonObject jsonObject = jsonParser.parse(json).getAsJsonObject();
+
+      String name = jsonObject.getAsJsonPrimitive("name").getAsString();
+      String queue = jsonObject.getAsJsonPrimitive("queue").getAsString();
+      String beginTime = jsonObject.getAsJsonPrimitive("beginTime").getAsString();
+      String endTime = jsonObject.getAsJsonPrimitive("endTime").getAsString();
+
+      SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
+      List<ScheduleApplication> scheduleApplications =
+          client.reply(name, queue, format.parse(beginTime), format.parse(endTime));
+
+      ConsoleTable table = new ConsoleTable();
+
+      table.addRow("name", "queue", "scheduleTime");
+
+      if (CollectionUtils.isNotEmpty(scheduleApplications)) {
+        for (ScheduleApplication scheduleApplication : scheduleApplications) {
+          table.addRow(
+              scheduleApplication.getName(),
+              scheduleApplication.getQueue(),
+              String.valueOf(scheduleApplication.getApplicationRecord().getScheduleTime()));
+        }
+      }
+
+      table.print();
     } else if (line.hasOption(Conf.OPTION_DELETE_QUEUED)) {
       int id = Integer.valueOf(line.getOptionValue(Conf.OPTION_DELETE_QUEUED));
 
@@ -562,7 +610,9 @@ public class ConsoleClient {
     } else if (line.hasOption(Conf.OPTION_KILL)) {
       String jsonPath = line.getOptionValue(Conf.OPTION_KILL);
 
-      String json = StringUtils.join(FileUtils.readLines(new File(jsonPath)), Symbols.NEWLINE);
+      String json =
+          StringUtils.join(
+              FileUtils.readLines(new File(jsonPath), CharEncoding.UTF_8), Symbols.NEWLINE);
 
       JsonParser jsonParser = new JsonParser();
 

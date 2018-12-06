@@ -1,9 +1,3 @@
-# Introduction to Cosmos
-
-# Key Features
-
-# Terminology
-
 # Quick Start
 
 **1. Build**

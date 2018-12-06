@@ -21,6 +21,7 @@ public class Conf {
   public static final String OPTION_QUEUED = "queued";
   public static final String OPTION_RECORDS = "records";
   public static final String OPTION_REPAIR = "repair";
+  public static final String OPTION_REPLAY = "replay";
   public static final String OPTION_DELETE_QUEUED = "deleteQueued";
   public static final String OPTION_KILL = "kill";
 }
