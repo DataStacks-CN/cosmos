@@ -121,6 +121,12 @@ public class CosmosClient implements CosmosService {
   }
 
   @Override
+  public List<ScheduleApplication> reply(String name, String queue, Date beginTime, Date endTime)
+      throws Exception {
+    return schedulerService.reply(name, queue, beginTime, endTime);
+  }
+
+  @Override
   public boolean deleteQueued(int id) throws Exception {
     return schedulerService.deleteQueued(id);
   }
