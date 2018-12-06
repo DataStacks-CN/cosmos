@@ -151,6 +151,13 @@ public class ConsoleClient {
             .required(false)
             .build());
     group.addOption(
+        Option.builder(Conf.OPTION_REPLAY)
+            .hasArg(true)
+            .argName("replay.json")
+            .desc("replay app")
+            .required(false)
+            .build());
+    group.addOption(
         Option.builder(Conf.OPTION_DELETE_QUEUED)
             .hasArg(true)
             .argName("message id")
