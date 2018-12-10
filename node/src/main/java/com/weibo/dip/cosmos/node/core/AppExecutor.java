@@ -520,7 +520,9 @@ public class AppExecutor {
               .withNetworkMode("host")
               .withCpuShares(scheduleApplication.getCores() * DEFAULT_CPU_SHARES)
               .withMemory(scheduleApplication.getMems() * 1024 * 1024L)
-              .withBinds(Bind.parse(containerLog + Symbols.COLON + containerLog))
+              .withBinds(
+                  Bind.parse(containerLog + Symbols.COLON + containerLog),
+                  Bind.parse(properties.getString("docker.container.tmp") + Symbols.COLON + "/tmp"))
               .withCmd(cmds)
               .exec();
 
