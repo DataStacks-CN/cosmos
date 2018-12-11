@@ -587,7 +587,7 @@ public class AppExecutor {
           }
         }
       } finally {
-        // dockerClient.removeContainerCmd(containerId).exec();
+        dockerClient.removeContainerCmd(containerId).exec();
         LOGGER.info(
             "Application {} container {} removed", scheduleApplication.getUniqeName(), containerId);
       }
