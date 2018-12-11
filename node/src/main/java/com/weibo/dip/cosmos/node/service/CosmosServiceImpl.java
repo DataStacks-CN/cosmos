@@ -11,12 +11,17 @@ import com.weibo.dip.cosmos.model.ApplicationRecord;
 import com.weibo.dip.cosmos.model.ApplicationState;
 import com.weibo.dip.cosmos.model.Message;
 import com.weibo.dip.cosmos.model.ScheduleApplication;
+import com.weibo.dip.cosmos.node.common.Conf;
 import com.weibo.dip.cosmos.node.db.SchedulerOperator;
 import com.weibo.dip.cosmos.node.quartz.QuartzJob;
 import com.weibo.dip.cosmos.node.queue.MessageQueue;
 import com.weibo.dip.cosmos.service.CosmosService;
+import com.weibo.dip.durian.ClasspathProperties;
+import com.weibo.dip.durian.Symbols;
+import com.weibo.dip.durian.util.DatetimeUtil;
 import com.weibo.dip.durian.util.GsonUtil;
 import com.weibo.dip.durian.util.IpUtil;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -24,6 +29,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.CharEncoding;
 import org.apache.commons.lang.StringUtils;
 import org.quartz.CronScheduleBuilder;
 import org.quartz.JobBuilder;
@@ -48,6 +55,7 @@ import org.slf4j.LoggerFactory;
 public class CosmosServiceImpl extends HessianServlet implements CosmosService {
   private static final Logger LOGGER = LoggerFactory.getLogger(CosmosServiceImpl.class);
 
+  private ClasspathProperties properties;
   private MessageQueue queue;
   private Scheduler scheduler;
   private SchedulerOperator operator;
@@ -55,11 +63,17 @@ public class CosmosServiceImpl extends HessianServlet implements CosmosService {
   /**
    * Construct a instance.
    *
+   * @param properties ClasspathProperties
    * @param queue MessageQueue
    * @param scheduler Scheduler
    * @param operator SchedulerOperator
    */
-  public CosmosServiceImpl(MessageQueue queue, Scheduler scheduler, SchedulerOperator operator) {
+  public CosmosServiceImpl(
+      ClasspathProperties properties,
+      MessageQueue queue,
+      Scheduler scheduler,
+      SchedulerOperator operator) {
+    this.properties = properties;
     this.queue = queue;
     this.scheduler = scheduler;
     this.operator = operator;
@@ -437,5 +451,43 @@ public class CosmosServiceImpl extends HessianServlet implements CosmosService {
     }
 
     return true;
+  }
+
+  @Override
+  public String log(String name, String queue, Date scheduleTime) throws Exception {
+    ApplicationRecord record = operator.getApplicationRecord(name, queue, scheduleTime);
+    if (Objects.isNull(record)
+        || !(record.getState().equals(ApplicationState.SUCCESS)
+            || record.getState().equals(ApplicationState.FAILED)
+            || record.getState().equals(ApplicationState.KILLED))) {
+      return null;
+    }
+
+    // container log
+    String containerLog =
+        properties.getString("docker.container.log")
+            + Symbols.SLASH
+            + record.getName()
+            + Symbols.SLASH
+            + DatetimeUtil.DATETIME_FORMAT.format(record.getScheduleTime());
+
+    StringBuilder logs = new StringBuilder();
+
+    logs.append(Conf.LOG_START).append(Symbols.NEWLINE);
+
+    List<String> lines =
+        FileUtils.readLines(new File(containerLog, Conf.LOG_START), CharEncoding.UTF_8);
+    if (CollectionUtils.isNotEmpty(lines)) {
+      lines.forEach(line -> logs.append(line).append(Symbols.NEWLINE));
+    }
+
+    logs.append(Conf.LOG_CONTAINER).append(Symbols.NEWLINE);
+
+    lines = FileUtils.readLines(new File(containerLog, Conf.LOG_CONTAINER), CharEncoding.UTF_8);
+    if (CollectionUtils.isNotEmpty(lines)) {
+      lines.forEach(line -> logs.append(line).append(Symbols.NEWLINE));
+    }
+
+    return logs.toString();
   }
 }

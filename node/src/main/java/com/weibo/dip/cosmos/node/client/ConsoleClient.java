@@ -171,6 +171,13 @@ public class ConsoleClient {
             .desc("kill app")
             .required(false)
             .build());
+    group.addOption(
+        Option.builder(Conf.OPTION_LOG)
+            .hasArg(true)
+            .argName("log.json")
+            .desc("log app")
+            .required(false)
+            .build());
     group.addOption(Option.builder("help").hasArg(false).required(false).build());
 
     Options options = new Options();
@@ -648,6 +655,32 @@ public class ConsoleClient {
       }
 
       System.out.println("killed " + flag);
+    } else if (line.hasOption(Conf.OPTION_LOG)) {
+      String jsonPath = line.getOptionValue(Conf.OPTION_LOG);
+
+      String json =
+          StringUtils.join(
+              FileUtils.readLines(new File(jsonPath), CharEncoding.UTF_8), Symbols.NEWLINE);
+
+      JsonParser jsonParser = new JsonParser();
+
+      JsonObject jsonObject = jsonParser.parse(json).getAsJsonObject();
+
+      String name = jsonObject.getAsJsonPrimitive("name").getAsString();
+      String queue = jsonObject.getAsJsonPrimitive("queue").getAsString();
+      String scheduleTime = jsonObject.getAsJsonPrimitive("scheduleTime").getAsString();
+
+      SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
+      ApplicationRecord record = client.getRecord(name, queue, format.parse(scheduleTime));
+      if (Objects.nonNull(record)) {
+        String host = record.getHost();
+        int port = Integer.valueOf(PROPERTIES.getString("server.port"));
+
+        CosmosClient targetClient = new CosmosClient(host, port);
+
+        System.out.println(targetClient.log(name, queue, format.parse(scheduleTime)));
+      }
     } else {
       formatter.printHelp("COMMAND", options);
     }
