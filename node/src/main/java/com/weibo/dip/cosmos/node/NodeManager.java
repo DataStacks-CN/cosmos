@@ -90,7 +90,7 @@ public class NodeManager {
     ServletContextHandler handler = new ServletContextHandler(ServletContextHandler.SESSIONS);
 
     handler.addServlet(
-        new ServletHolder(new CosmosServiceImpl(queue, scheduler, operator)),
+        new ServletHolder(new CosmosServiceImpl(properties, queue, scheduler, operator)),
         "/service/node");
 
     server.setHandler(handler);

@@ -135,4 +135,9 @@ public class CosmosClient implements CosmosService {
   public boolean kill(String name, String queue, Date scheduleTime) throws Exception {
     return schedulerService.kill(name, queue, scheduleTime);
   }
+
+  @Override
+  public String log(String name, String queue, Date scheduleTime) throws Exception {
+    return schedulerService.log(name, queue, scheduleTime);
+  }
 }

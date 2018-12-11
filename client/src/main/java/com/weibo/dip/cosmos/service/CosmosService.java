@@ -51,4 +51,6 @@ public interface CosmosService {
   boolean deleteQueued(int id) throws Exception;
 
   boolean kill(String name, String queue, Date scheduleTime) throws Exception;
+
+  String log(String name, String queue, Date scheduleTime) throws Exception;
 }

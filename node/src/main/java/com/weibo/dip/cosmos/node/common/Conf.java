@@ -8,6 +8,9 @@ package com.weibo.dip.cosmos.node.common;
 public class Conf {
   public static final String COSMOS_PROPERTIES = "cosmos.properties";
 
+  public static final String LOG_START = "start.log";
+  public static final String LOG_CONTAINER = "container.log";
+
   public static final String OPTION_START = "start";
   public static final String OPTION_UPDATE = "update";
   public static final String OPTION_STOP = "stop";
@@ -24,4 +27,5 @@ public class Conf {
   public static final String OPTION_REPLAY = "replay";
   public static final String OPTION_DELETE_QUEUED = "deleteQueued";
   public static final String OPTION_KILL = "kill";
+  public static final String OPTION_LOG = "log";
 }
