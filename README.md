@@ -105,3 +105,15 @@ server.hosts=${hosts}
 ```
 
 ## Run
+
+### 启动
+
+python bin/cosmos.py -start
+
+### 查看
+
+python bin/cosmos.py -status
+
+### 停止
+
+python bin/cosmos.py -stop
