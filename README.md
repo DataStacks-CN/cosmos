@@ -118,3 +118,58 @@ python bin/cosmos.py -status
 ### 停止
 
 python bin/cosmos.py -stop
+
+## 操作
+
+### start
+
+python bin/client.py -start /tmp/video_client_upload_metrics.json
+
+```text
+{
+    "name": "video_client_upload_metrics",
+    "queue": "pinot",
+    "user": "yurun",
+    "priority": 0,
+    "cores": 1,
+    "mems": 6144,
+    "repository": "registry.api.weibo.com/dippub/pinot_import_application",
+    "tag": "0.0.1",
+    "params": [],
+    "cron": "0 45 16 * * ?",
+    "timeout": 7200
+}
+```
+
+* name
+   应用名称
+   
+* queue
+   队列名称
+
+* user
+   用户
+   
+* priority
+   调度优先级
+   
+* cores
+   应用运行时使用的CPU数目
+   
+* mems
+   应用运行时使用的内存大小
+   
+* repository
+   应用运行时使用的Docker Image仓库地址
+   
+* tag
+   应用运行时使用的Docker Image版本号
+   
+* params
+   应用运行时接收的参数值，默认数组为空；
+   
+* cron
+   Quartz Cron表达式
+   
+* timeout
+   应用运行超时时间，单位：秒
