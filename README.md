@@ -222,3 +222,21 @@ python bin/client.py -apps ${queue}
 python bin/client.py -app ${name}:${queue}
 
 描述调度系统中指定名称、指定队列的应用详情
+
+### running
+
+python bin/client.py -running ${queue}
+
+列出调度系统中指定队列下的所有处于"运行"状态的应用信息
+
+### queued
+
+python bin/client.py -queued
+
+列出调度系统"等待队列"中的所有应用信息
+
+### deleteQueued
+
+python bin/client.py -deleteQueued ${mid}
+
+删除调度系统"等待队列"中指定mid的应用
