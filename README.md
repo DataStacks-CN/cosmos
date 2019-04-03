@@ -204,3 +204,21 @@ python bin/client.py -start /tmp/update.json
    队列名称
    
 update操作要求应用“name:queue”必须处于“已调度”状态，除“cron”之外，其余字段信息均可被更新
+
+### queues
+
+python bin/client.py -queues
+
+列出调度系统中的所有队列名称
+
+### apps
+
+python bin/client.py -apps ${queue}
+
+列出调度系统中指定队列下的所有应用名称
+
+### app
+
+python bin/client.py -app ${name}:${queue}
+
+描述调度系统中指定名称、指定队列的应用详情
