@@ -123,7 +123,7 @@ python bin/cosmos.py -stop
 
 ### start
 
-python bin/client.py -start /tmp/video_client_upload_metrics.json
+python bin/client.py -start /tmp/start.json
 
 ```text
 {
@@ -177,3 +177,30 @@ python bin/client.py -start /tmp/video_client_upload_metrics.json
 ### stop
 
 python bin/client.py -stop ${name}:${queue}
+
+### update
+
+python bin/client.py -start /tmp/update.json
+
+```text
+{
+    "name": "video_client_upload_metrics",
+    "queue": "pinot",
+    "user": "yurun",
+    "priority": 0,
+    "cores": 1,
+    "mems": 6144,
+    "repository": "registry.api.weibo.com/dippub/pinot_import_application",
+    "tag": "0.0.1",
+    "params": [],
+    "timeout": 7200
+}
+```
+
+* name
+   应用名称
+   
+* queue
+   队列名称
+   
+update操作要求应用“name:queue”必须处于“已调度”状态，除“cron”之外，其余字段信息均可被更新
