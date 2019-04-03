@@ -2,9 +2,9 @@
 
 分布式任务调度系统
 
-# Quick Start
+# 快速开始
 
-## Build
+## 构建
    
 mkdir /data0/workspace
 cd /data0/workspace
@@ -16,7 +16,7 @@ cd cosmos
 
 mvn clean package -pl node -am
 
-## Config
+## 配置
 
 vim conf/cosmos.properties
 
@@ -104,7 +104,7 @@ server.port=${port}
 server.hosts=${hosts}
 ```
 
-## Run
+## 运行
 
 ### 启动
 
