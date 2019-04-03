@@ -141,6 +141,8 @@ python bin/client.py -start /tmp/start.json
 }
 ```
 
+开启应用调度
+
 * name
    应用名称
    
@@ -178,6 +180,8 @@ python bin/client.py -start /tmp/start.json
 
 python bin/client.py -stop ${name}:${queue}
 
+停止应用调度
+
 ### update
 
 python bin/client.py -start /tmp/update.json
@@ -196,6 +200,8 @@ python bin/client.py -start /tmp/update.json
     "timeout": 7200
 }
 ```
+
+更新应用信息
 
 * name
    应用名称
@@ -240,3 +246,76 @@ python bin/client.py -queued
 python bin/client.py -deleteQueued ${mid}
 
 删除调度系统"等待队列"中指定mid的应用
+
+### records
+
+python bin/client.py -records /tmp/records.json
+
+```text
+{
+    "name": "video_client_upload_metrics",
+    "queue": "pinot",
+    "beginTime": "2019-04-02 00:00:00",
+    "endTime": "2019-04-02 23:59:59"
+}
+```
+
+列出调度系统中指定名称、指定队列、指定时间范围的应用运行记录
+
+* name
+    应用名称
+
+* queue
+    队列名称
+
+* beginTime
+    起始时间，闭区间
+
+* endTime
+    截止时间，闭区间
+
+### kill
+
+python bin/client.py -kill /tmp/kill.json
+
+```text
+{
+    "name": "video_client_upload_metrics",
+    "queue": "pinot",
+    "scheduleTime": "2019-04-02 16:45:00"
+}
+```
+
+杀死调度系统中指定名称、指定队列、指定调度时间的应用，要求该应用必须处于"运行"状态
+
+* name
+    应用名称
+
+* queue
+    队列名称
+
+* scheduleTime
+    调度时间
+
+### log
+
+python bin/client.py -log /tmp/log.json
+
+```text
+{
+    "name": "video_client_upload_metrics",
+    "queue": "pinot",
+    "scheduleTime": "2019-04-02 16:45:00"
+}
+```
+
+查看调度系统中指定名称、指定队列、指定调度时间的应用日志，要求相应的应用运行记录必须存在
+
+* name
+    应用名称
+
+* queue
+    队列名称
+
+* scheduleTime
+    调度时间
