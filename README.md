@@ -345,3 +345,67 @@ python bin/client.py -replay /tmp/replay.json
 }
 
 重新执行调度系统中指定名称、指定队列、指定时间范围内的应用
+
+### addDepend
+
+python bin/client.py -addDepend /tmp/depend.json
+
+{
+    "name": "baishan_bandwidth_staging",
+    "queue": "pinot",
+    "dependName": "cdn.baishan_bandwidth_staging",
+    "dependQueue": "hive",
+    "fromSeconds": 86400,
+    "toSeconds": 0
+}
+
+添加应用依赖
+
+* name
+    应用名称
+
+* queue
+    队列名称
+
+* dependName
+    依赖应用名称
+
+* dependQueue
+    依赖队列名称
+
+* fromSeconds
+    起始偏移秒数
+
+* toSeconds
+    截止偏移秒数
+
+### getDepends
+
+python bin/client.py -getDepends ${name}:${queue}
+
+查询调度系统中指定名称、指定队列的应用依赖信息
+
+### removeDepend
+
+python bin/client.py -addDepend /tmp/depend.json
+
+{
+    "name": "baishan_bandwidth_staging",
+    "queue": "pinot",
+    "dependName": "cdn.baishan_bandwidth_staging",
+    "dependQueue": "hive"
+}
+
+移除应用依赖
+
+* name
+    应用名称
+
+* queue
+    队列名称
+
+* dependName
+    依赖应用名称
+
+* dependQueue
+    依赖队列名称
