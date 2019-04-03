@@ -173,3 +173,7 @@ python bin/client.py -start /tmp/video_client_upload_metrics.json
    
 * timeout
    应用运行超时时间，单位：秒
+
+### stop
+
+python bin/client.py -stop ${name}:${queue}
