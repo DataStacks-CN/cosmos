@@ -1,16 +1,27 @@
 # Quick Start
 
-**1. Build**
-   mkdir /data0/workspace
-   cd /data0/workspace
+## Build
+   
+mkdir /data0/workspace
+cd /data0/workspace
 
-   git clone https://github.com/weibodip/cosmos.git
-   git checkout ${tag}
+git clone https://github.com/weibodip/cosmos.git
+git checkout ${tag}
 
-   cd cosmos
+cd cosmos
 
-   mvn clean package -pl node -am
+mvn clean package -pl node -am
 
-**2. Config**
+## Config
 
-**3. Run**
+vim conf/cosmos.properties
+
+### c3p0
+
+### quartz
+
+### docker
+
+### server
+
+## Run
