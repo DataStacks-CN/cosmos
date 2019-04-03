@@ -77,6 +77,27 @@ docker.container.tmp=/data0/tmp
 
 ### server
 
+* server.cores
 
+   可以使用的CPU数目
+
+* server.mems
+
+   可以使用的内存大小，单位：MB
+   
+* server.port
+
+   调度系统服务端口，所有实例端口必须保持一致
+
+* server.hosts
+
+   调度系统实例地址，多个实例地址以“,”分隔
+   
+```text
+server.cores=${cores}
+server.mems=${mems}
+server.port=${port}
+server.hosts=${hosts}
+```
 
 ## Run
