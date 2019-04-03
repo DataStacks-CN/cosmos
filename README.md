@@ -387,7 +387,7 @@ python bin/client.py -getDepends ${name}:${queue}
 
 ### removeDepend
 
-python bin/client.py -addDepend /tmp/depend.json
+python bin/client.py -removeDepend /tmp/depend.json
 
 {
     "name": "baishan_bandwidth_staging",
