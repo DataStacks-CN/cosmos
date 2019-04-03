@@ -10,6 +10,7 @@ mkdir /data0/workspace
 cd /data0/workspace
 
 git clone https://github.com/weibodip/cosmos.git
+
 git checkout ${tag}
 
 cd cosmos
