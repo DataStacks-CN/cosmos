@@ -478,7 +478,7 @@ public class ConsoleClient {
               dependency.getName(),
               dependency.getQueue(),
               dependency.getDependName(),
-              dependency.getQueue(),
+              dependency.getDependQueue(),
               String.valueOf(dependency.getFromSeconds()),
               String.valueOf(dependency.getToSeconds()));
         }

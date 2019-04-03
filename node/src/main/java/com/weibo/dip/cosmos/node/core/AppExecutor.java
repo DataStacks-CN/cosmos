@@ -473,6 +473,8 @@ public class AppExecutor {
       String containerLog =
           properties.getString("docker.container.log")
               + Symbols.SLASH
+              + scheduleApplication.getQueue()
+              + Symbols.SLASH
               + scheduleApplication.getName()
               + Symbols.SLASH
               + DatetimeUtil.DATETIME_FORMAT.format(
