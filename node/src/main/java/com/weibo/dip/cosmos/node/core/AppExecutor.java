@@ -109,7 +109,7 @@ public class AppExecutor {
 
   private class Submitter extends Thread {
 
-    private String getQueueWithLeastUsedResource() throws Exception {
+    private List<QueueResource> getSortedQueueResourceListByASC() throws Exception {
       // get queues
       List<String> queues = queue.queues();
       if (CollectionUtils.isEmpty(queues)) {
@@ -131,26 +131,10 @@ public class AppExecutor {
         cores += usedCores;
         mems += usedMems;
 
-        Message nextFireMessage = queue.getNextFireMessageByQueue(queueName,new Date());
-
-        if (Objects.nonNull(nextFireMessage)) {
-          ScheduleApplication scheduleApplication =
-                  GsonUtil.fromJson(nextFireMessage.getMessage(), ScheduleApplication.class);
-          if (!checkRunningConditions(scheduleApplication)) {
-            continue;
-          }
-        } else {
-
-          continue;
-        }
-
         queueResources.add(new QueueResource(queueName, usedCores, usedMems));
 
       }
 
-      if (queueResources.isEmpty()) {
-        return null;
-      }
 
       // compute queue resource percents
       for (QueueResource queueResource : queueResources) {
@@ -162,11 +146,10 @@ public class AppExecutor {
             usedCorePercent > usedMemPercent ? usedCorePercent : usedMemPercent);
       }
 
-
       // sort message queue by resource percent asc
       queueResources.sort(Comparator.comparingDouble(QueueResource::getPercent));
 
-      return queueResources.get(0).getQueue();
+      return queueResources;
     }
 
     private boolean checkRunningConditions(ScheduleApplication scheduleApplication) {
@@ -281,6 +264,7 @@ public class AppExecutor {
 
     @Override
     public void run() {
+
       while (!isInterrupted()) {
         // resource exhaustion?
         if (usedCores.get() >= cores || usedMems.get() >= mems) {
@@ -302,10 +286,11 @@ public class AppExecutor {
         }
 
         try {
-          // get the queue with the least used resources
-          String queueName = getQueueWithLeastUsedResource();
-          if (Objects.isNull(queueName)) {
-            LOGGER.debug("Can't find the queue with the least resources, wait...");
+          // Sort queues using resources in ascending order
+          List<QueueResource> sortedQueueResources = getSortedQueueResourceListByASC();
+
+          if (Objects.isNull(sortedQueueResources)) {
+            LOGGER.debug("Can't find the queue, wait...");
 
             try {
               Thread.sleep(DEFAULT_TIME_SLEEP);
@@ -318,56 +303,72 @@ public class AppExecutor {
             continue;
           }
 
-          LOGGER.debug("Queue {} uses the least resources", queueName);
 
-          // get a message from the queue that uses the least resources
-          Message message = queue.consume(queueName);
-          if (Objects.isNull(message)) {
-            LOGGER.debug(
-                "Message in queue {} may be delayed, or acquired by other nodes", queueName);
+          for (QueueResource queueResource: sortedQueueResources) {
 
-            try {
-              Thread.sleep(DEFAULT_TIME_SLEEP);
-            } catch (InterruptedException e) {
-              LOGGER.warn("Submitter wait for a message, but interrupted");
+            String queueName = queueResource.getQueue();
 
-              interrupt();
+            // LOGGER.debug("Queue {} uses the least resources", queueName);
+
+            // get a message from the queue that uses the least resources
+            Message message = queue.consume(queueName);
+            if (Objects.isNull(message)) {
+              LOGGER.debug(
+                      "Message in queue {} may be delayed, or acquired by other nodes", queueName);
+              try {
+                Thread.sleep(DEFAULT_TIME_SLEEP);
+              } catch (InterruptedException e) {
+                LOGGER.warn("Submitter wait for a message, but interrupted");
+
+                interrupt();
+              }
+
+              break;
             }
 
-            continue;
+            // deserialize message to application
+            ScheduleApplication scheduleApplication =
+                    GsonUtil.fromJson(message.getMessage(), ScheduleApplication.class);
+
+            updateScheduleApplicationState(scheduleApplication, ApplicationState.PENDING);
+            LOGGER.info("Application {} taked from queue", scheduleApplication.getUniqeName());
+
+            boolean canRun = checkRunningConditions(scheduleApplication);
+
+            if ((queueResource.getMems() == 0 || queueResource.getCores() == 0) && !canRun ) {
+              continue;
+            }
+
+            if (canRun) {
+              // run
+              usedCores.addAndGet(scheduleApplication.getCores());
+              usedMems.addAndGet(scheduleApplication.getMems());
+
+              LOGGER.info(
+                      "Application {} meet running conditions, submit to run",
+                      scheduleApplication.getUniqeName());
+
+              executors.submit(new Executor(scheduleApplication));
+
+              break;
+
+            } else {
+              // delay
+              updateScheduleApplicationState(scheduleApplication, ApplicationState.QUEUED);
+
+              queue.produce(
+                      GsonUtil.toJson(scheduleApplication),
+                      scheduleApplication.getQueue(),
+                      scheduleApplication.getPriority(),
+                      DateUtils.addMilliseconds(new Date(), DEFAULT_EXECUTE_DELAY));
+
+              LOGGER.info(
+                      "Application {} does not meet running conditions, deley to queue",
+                      scheduleApplication.getUniqeName());
+            }
+
           }
 
-          // deserialize message to application
-          ScheduleApplication scheduleApplication =
-              GsonUtil.fromJson(message.getMessage(), ScheduleApplication.class);
-
-          updateScheduleApplicationState(scheduleApplication, ApplicationState.PENDING);
-          LOGGER.info("Application {} taked from queue", scheduleApplication.getUniqeName());
-
-          if (checkRunningConditions(scheduleApplication)) {
-            // run
-            usedCores.addAndGet(scheduleApplication.getCores());
-            usedMems.addAndGet(scheduleApplication.getMems());
-
-            LOGGER.info(
-                "Application {} meet running conditions, submit to run",
-                scheduleApplication.getUniqeName());
-
-            executors.submit(new Executor(scheduleApplication));
-          } else {
-            // delay
-            updateScheduleApplicationState(scheduleApplication, ApplicationState.QUEUED);
-
-            queue.produce(
-                GsonUtil.toJson(scheduleApplication),
-                scheduleApplication.getQueue(),
-                scheduleApplication.getPriority(),
-                DateUtils.addMilliseconds(new Date(), DEFAULT_EXECUTE_DELAY));
-
-            LOGGER.info(
-                "Application {} does not meet running conditions, deley to queue",
-                scheduleApplication.getUniqeName());
-          }
         } catch (Exception e) {
           LOGGER.error("Submitter run error: {}", ExceptionUtils.getStackTrace(e));
         }
