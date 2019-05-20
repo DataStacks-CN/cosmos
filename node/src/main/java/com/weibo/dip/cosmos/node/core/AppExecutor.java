@@ -25,13 +25,7 @@ import com.weibo.dip.durian.util.GsonUtil;
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -130,14 +124,32 @@ public class AppExecutor {
       int mems = 0;
 
       // get queue resources
-      for (String queue : queues) {
-        int usedCores = operator.getUsedCores(queue);
-        int usedMems = operator.getUsedMems(queue);
+      for (String queueName : queues) {
+        int usedCores = operator.getUsedCores(queueName);
+        int usedMems = operator.getUsedMems(queueName);
 
         cores += usedCores;
         mems += usedMems;
 
-        queueResources.add(new QueueResource(queue, usedCores, usedMems));
+        Message nextFireMessage = queue.getNextFireMessageByQueue(queueName,new Date());
+
+        if (Objects.nonNull(nextFireMessage)) {
+          ScheduleApplication scheduleApplication =
+                  GsonUtil.fromJson(nextFireMessage.getMessage(), ScheduleApplication.class);
+          if (!checkRunningConditions(scheduleApplication)) {
+            continue;
+          }
+        } else {
+
+          continue;
+        }
+
+        queueResources.add(new QueueResource(queueName, usedCores, usedMems));
+
+      }
+
+      if (queueResources.isEmpty()) {
+        return null;
       }
 
       // compute queue resource percents
@@ -149,6 +161,7 @@ public class AppExecutor {
         queueResource.setPercent(
             usedCorePercent > usedMemPercent ? usedCorePercent : usedMemPercent);
       }
+
 
       // sort message queue by resource percent asc
       queueResources.sort(Comparator.comparingDouble(QueueResource::getPercent));
