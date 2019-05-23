@@ -305,7 +305,6 @@ public class AppExecutor {
 
 
           for (QueueResource queueResource: sortedQueueResources) {
-
             String queueName = queueResource.getQueue();
 
             // LOGGER.debug("Queue {} uses the least resources", queueName);
@@ -335,10 +334,6 @@ public class AppExecutor {
 
             boolean canRun = checkRunningConditions(scheduleApplication);
 
-            if ((queueResource.getMems() == 0 || queueResource.getCores() == 0) && !canRun ) {
-              continue;
-            }
-
             if (canRun) {
               // run
               usedCores.addAndGet(scheduleApplication.getCores());
@@ -351,7 +346,6 @@ public class AppExecutor {
               executors.submit(new Executor(scheduleApplication));
 
               break;
-
             } else {
               // delay
               updateScheduleApplicationState(scheduleApplication, ApplicationState.QUEUED);
@@ -366,9 +360,7 @@ public class AppExecutor {
                       "Application {} does not meet running conditions, deley to queue",
                       scheduleApplication.getUniqeName());
             }
-
           }
-
         } catch (Exception e) {
           LOGGER.error("Submitter run error: {}", ExceptionUtils.getStackTrace(e));
         }
