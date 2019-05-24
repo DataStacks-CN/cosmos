@@ -11,9 +11,9 @@ cd /data0/workspace
 
 git clone https://github.com/weibodip/cosmos.git
 
-git checkout ${tag}
-
 cd cosmos
+
+git checkout ${tag}
 
 mvn clean package -pl node -am
 
@@ -324,12 +324,14 @@ python bin/client.py -log /tmp/log.json
 
 python bin/client.py -repair /tmp/repair.json
 
+```text
 {
     "name": "video_client_upload_metrics",
     "queue": "pinot",
     "beginTime": "2019-04-02 00:00:00",
     "endTime": "2019-04-02 23:59:59"
 }
+```
 
 修复调度系统中指定名称、指定队列、指定时间范围内的应用，要求相应的应用记录必须是"未调度"、"失败"、"杀死"三者之一
 
@@ -337,12 +339,14 @@ python bin/client.py -repair /tmp/repair.json
 
 python bin/client.py -replay /tmp/replay.json
 
+```text
 {
     "name": "video_client_upload_metrics",
     "queue": "pinot",
     "beginTime": "2019-04-02 00:00:00",
     "endTime": "2019-04-02 23:59:59"
 }
+```
 
 重新执行调度系统中指定名称、指定队列、指定时间范围内的应用
 
@@ -350,6 +354,7 @@ python bin/client.py -replay /tmp/replay.json
 
 python bin/client.py -addDepend /tmp/depend.json
 
+```text
 {
     "name": "baishan_bandwidth_staging",
     "queue": "pinot",
@@ -358,6 +363,7 @@ python bin/client.py -addDepend /tmp/depend.json
     "fromSeconds": 86400,
     "toSeconds": 0
 }
+```
 
 添加应用依赖
 
@@ -389,12 +395,14 @@ python bin/client.py -getDepends ${name}:${queue}
 
 python bin/client.py -removeDepend /tmp/depend.json
 
+```text
 {
     "name": "baishan_bandwidth_staging",
     "queue": "pinot",
     "dependName": "cdn.baishan_bandwidth_staging",
     "dependQueue": "hive"
 }
+```
 
 移除应用依赖
 
