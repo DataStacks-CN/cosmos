@@ -25,7 +25,13 @@ import com.weibo.dip.durian.util.GsonUtil;
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -109,7 +115,7 @@ public class AppExecutor {
 
   private class Submitter extends Thread {
 
-    private List<QueueResource> getSortedQueueResourceListByASC() throws Exception {
+    private List<QueueResource> getSortedQueueResourceListByAsc() throws Exception {
       // get queues
       List<String> queues = queue.queues();
       if (CollectionUtils.isEmpty(queues)) {
@@ -132,9 +138,7 @@ public class AppExecutor {
         mems += usedMems;
 
         queueResources.add(new QueueResource(queueName, usedCores, usedMems));
-
       }
-
 
       // compute queue resource percents
       for (QueueResource queueResource : queueResources) {
@@ -287,7 +291,7 @@ public class AppExecutor {
 
         try {
           // Sort queues using resources in ascending order
-          List<QueueResource> sortedQueueResources = getSortedQueueResourceListByASC();
+          List<QueueResource> sortedQueueResources = getSortedQueueResourceListByAsc();
 
           if (Objects.isNull(sortedQueueResources)) {
             LOGGER.debug("Can't find the queue, wait...");
@@ -303,8 +307,7 @@ public class AppExecutor {
             continue;
           }
 
-
-          for (QueueResource queueResource: sortedQueueResources) {
+          for (QueueResource queueResource : sortedQueueResources) {
             String queueName = queueResource.getQueue();
 
             // LOGGER.debug("Queue {} uses the least resources", queueName);
@@ -313,7 +316,7 @@ public class AppExecutor {
             Message message = queue.consume(queueName);
             if (Objects.isNull(message)) {
               LOGGER.debug(
-                      "Message in queue {} may be delayed, or acquired by other nodes", queueName);
+                  "Message in queue {} may be delayed, or acquired by other nodes", queueName);
               try {
                 Thread.sleep(DEFAULT_TIME_SLEEP);
               } catch (InterruptedException e) {
@@ -327,7 +330,7 @@ public class AppExecutor {
 
             // deserialize message to application
             ScheduleApplication scheduleApplication =
-                    GsonUtil.fromJson(message.getMessage(), ScheduleApplication.class);
+                GsonUtil.fromJson(message.getMessage(), ScheduleApplication.class);
 
             updateScheduleApplicationState(scheduleApplication, ApplicationState.PENDING);
             LOGGER.info("Application {} taked from queue", scheduleApplication.getUniqeName());
@@ -340,8 +343,8 @@ public class AppExecutor {
               usedMems.addAndGet(scheduleApplication.getMems());
 
               LOGGER.info(
-                      "Application {} meet running conditions, submit to run",
-                      scheduleApplication.getUniqeName());
+                  "Application {} meet running conditions, submit to run",
+                  scheduleApplication.getUniqeName());
 
               executors.submit(new Executor(scheduleApplication));
 
@@ -351,14 +354,14 @@ public class AppExecutor {
               updateScheduleApplicationState(scheduleApplication, ApplicationState.QUEUED);
 
               queue.produce(
-                      GsonUtil.toJson(scheduleApplication),
-                      scheduleApplication.getQueue(),
-                      scheduleApplication.getPriority(),
-                      DateUtils.addMilliseconds(new Date(), DEFAULT_EXECUTE_DELAY));
+                  GsonUtil.toJson(scheduleApplication),
+                  scheduleApplication.getQueue(),
+                  scheduleApplication.getPriority(),
+                  DateUtils.addMilliseconds(new Date(), DEFAULT_EXECUTE_DELAY));
 
               LOGGER.info(
-                      "Application {} does not meet running conditions, deley to queue",
-                      scheduleApplication.getUniqeName());
+                  "Application {} does not meet running conditions, deley to queue",
+                  scheduleApplication.getUniqeName());
             }
           }
         } catch (Exception e) {

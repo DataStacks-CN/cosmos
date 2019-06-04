@@ -201,24 +201,4 @@ public class MessageQueue {
 
     return queryRunner.query(sql, new StringHandler());
   }
-
-
-
-  /**
-   * Get next fire message from specified queue.
-   *
-   * @return message
-   * @throws Exception if access db error
-   */
-  public Message getNextFireMessageByQueue(String queueName,Date timestamp) throws Exception {
-
-    String sql = "select * from message_queue where queue = ？and msgtimestamp <= ? order by priority asc, msgtimestamp asc limit 1";
-
-    List<Message> messages = queryRunner.query(sql, new MessageHandler(), queueName,timestamp);
-
-    return CollectionUtils.isNotEmpty(messages) ? messages.get(0) : null;
-
-  }
-
-
 }
