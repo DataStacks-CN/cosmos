@@ -508,6 +508,7 @@ public class AppExecutor {
       cmds.add(
           String.valueOf(scheduleApplication.getApplicationRecord().getScheduleTime().getTime()));
       cmds.add(containerLog);
+      cmds.add(String.valueOf(scheduleApplication.getCores()));
 
       if (ArrayUtils.isNotEmpty(scheduleApplication.getParams())) {
         cmds.addAll(Arrays.asList(scheduleApplication.getParams()));
