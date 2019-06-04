@@ -62,12 +62,15 @@ public class QuartzJob implements Job {
       ScheduleApplication scheduleApplication =
           new ScheduleApplication(application, applicationRecord);
 
+      /*
+       Fix possible recurring scheduling issues.
+      */
+      operator.addApplicationRecord(applicationRecord);
       queue.produce(
           GsonUtil.toJson(scheduleApplication),
           scheduleApplication.getQueue(),
           scheduleApplication.getPriority(),
           scheduleTime);
-      operator.addOrUpdateApplicationRecord(applicationRecord);
 
       LOGGER.info("Application {} queued", scheduleApplication.getUniqeName());
     } catch (Exception e) {

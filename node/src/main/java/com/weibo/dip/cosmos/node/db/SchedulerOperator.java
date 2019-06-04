@@ -158,6 +158,32 @@ public class SchedulerOperator {
   }
 
   /**
+   * Add application record.
+   *
+   * @param record application record
+   * @return the number of rows updated
+   * @throws SQLException if access db error
+   */
+  public int addApplicationRecord(ApplicationRecord record) throws SQLException {
+    List<String> sqls = new ArrayList<>();
+
+    sqls.add("insert into records");
+    sqls.add("(name, queue, host, scheduletime, updatetime, state)");
+    sqls.add("values (?, ?, ?, ?, ?, ?)");
+
+    String sql = StringUtils.join(sqls, Symbols.SPACE);
+
+    return queryRunner.update(
+        sql,
+        record.getName(),
+        record.getQueue(),
+        record.getHost(),
+        record.getScheduleTime(),
+        record.getUpdateTime(),
+        record.getState().ordinal());
+  }
+
+  /**
    * Add or update application record.
    *
    * @param record application record

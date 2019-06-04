@@ -1,0 +1,23 @@
+vim /tmp/example_application.json
+
+{
+  "name": "example_application",
+  "queue": "example",
+  "user": "root",
+  "priority": 0,
+  "cores": 1,
+  "mems": 1024,
+  "repository": "docker.io/example_application",
+  "tag": "0.0.1",
+  "params": [],
+  "cron": "0 0/5 * * * ? ",
+  "timeout": 10
+}
+
+Start
+
+python bin/client.py -start /tmp/example_application.json
+
+Stop
+
+python bin/client.py -stop example_application:example
