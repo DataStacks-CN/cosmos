@@ -38,7 +38,6 @@ import org.quartz.JobDataMap;
 import org.quartz.JobDetail;
 import org.quartz.JobKey;
 import org.quartz.Scheduler;
-import org.quartz.SchedulerException;
 import org.quartz.Trigger;
 import org.quartz.TriggerBuilder;
 import org.quartz.TriggerKey;
@@ -81,10 +80,6 @@ public class CosmosServiceImpl extends HessianServlet implements CosmosService {
     this.operator = operator;
   }
 
-  private boolean scheduled(String name, String queue) throws SchedulerException {
-    return scheduler.checkExists(new JobKey(name, queue));
-  }
-
   @Override
   public boolean connect() {
     return true;
@@ -115,7 +110,7 @@ public class CosmosServiceImpl extends HessianServlet implements CosmosService {
         operator.existApplication(application.getName(), application.getQueue()),
         "Application %s:%s not exist",
         application.getName(), application.getQueue());
-    Preconditions.checkState(!scheduled(application.getName(), application.getQueue()),
+    Preconditions.checkState(!isScheduled(application.getName(), application.getQueue()),
         "Application %s:%s still handles the scheduling state", application.getName(),
         application.getQueue());
 
@@ -132,7 +127,7 @@ public class CosmosServiceImpl extends HessianServlet implements CosmosService {
         StringUtils.isNotEmpty(name) && StringUtils.isNotEmpty(queue),
         "name and queue must be specified");
 
-    Preconditions.checkState(!scheduled(name, queue),
+    Preconditions.checkState(!isScheduled(name, queue),
         "Application %s:%s still handles the scheduling state", name, queue);
 
     operator.deleteApplication(name, queue);
@@ -141,51 +136,42 @@ public class CosmosServiceImpl extends HessianServlet implements CosmosService {
   }
 
   @Override
-  public void start(Application application) throws Exception {
-    Preconditions.checkState(Objects.nonNull(application), "Application must be specifiled");
-
+  public void start(String name, String queue) throws Exception {
     Preconditions.checkState(
-        !operator.existApplication(application.getName(), application.getQueue()),
-        "Application %s already started",
-        application.getUniqeName());
+        StringUtils.isNotEmpty(name) && StringUtils.isNotEmpty(queue),
+        "name and queue must be specified");
 
-    // create jobdetail
-    JobKey jobKey = new JobKey(application.getName(), application.getQueue());
+    Application application = get(name, queue);
 
-    Preconditions.checkState(
-        !scheduler.checkExists(jobKey),
-        "Application %s does not in db, but exist in node",
-        application.getUniqeName());
+    Preconditions
+        .checkState(Objects.nonNull(application), "Application %s:%s not exist", name, queue);
+    Preconditions
+        .checkState(!isScheduled(name, queue), "Application %s:%s already started", name, queue);
 
     JobDataMap data = new JobDataMap();
 
-    data.put(QuartzJob.NAME, application.getName());
-    data.put(QuartzJob.QUEUE, application.getQueue());
+    data.put(QuartzJob.NAME, name);
+    data.put(QuartzJob.QUEUE, queue);
 
     JobDetail job =
-        JobBuilder.newJob(QuartzJob.class).withIdentity(jobKey).usingJobData(data).build();
-
-    // create trigger
-    TriggerKey triggerKey = new TriggerKey(application.getName(), application.getQueue());
+        JobBuilder.newJob(QuartzJob.class).withIdentity(new JobKey(name, queue)).usingJobData(data)
+            .build();
 
     Trigger trigger =
         TriggerBuilder.newTrigger()
-            .withIdentity(triggerKey)
+            .withIdentity(new TriggerKey(name, queue))
             .withSchedule(
                 CronScheduleBuilder.cronSchedule(application.getCron())
                     .withMisfireHandlingInstructionDoNothing())
             .build();
 
-    // schedule and add
+    // schedule
     scheduler.scheduleJob(job, trigger);
 
-    operator.addApplication(application);
-
     LOGGER.info(
-        "Application {}:{} started: {}",
+        "Application {}:{} started",
         application.getName(),
-        application.getQueue(),
-        application.getCron());
+        application.getQueue());
   }
 
   @Override
@@ -195,7 +181,7 @@ public class CosmosServiceImpl extends HessianServlet implements CosmosService {
         "name and queue must be specified");
 
     Preconditions.checkState(
-        operator.existApplication(name, queue), "Application %s_%s does not exist", name, queue);
+        operator.existApplication(name, queue), "Application %s:%s not exist", name, queue);
 
     JobKey jobKey = new JobKey(name, queue);
     TriggerKey triggerKey = new TriggerKey(name, queue);
@@ -203,9 +189,12 @@ public class CosmosServiceImpl extends HessianServlet implements CosmosService {
     scheduler.unscheduleJob(triggerKey);
     scheduler.deleteJob(jobKey);
 
-    operator.deleteApplication(name, queue);
-
     LOGGER.info("Application {}:{} stoped", name, queue);
+  }
+
+  @Override
+  public boolean isScheduled(String name, String queue) throws Exception {
+    return scheduler.checkExists(new JobKey(name, queue));
   }
 
   @Override

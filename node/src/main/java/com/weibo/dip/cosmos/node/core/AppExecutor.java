@@ -514,7 +514,9 @@ public class AppExecutor {
       cmds.add(scheduleApplication.getRepository());
       cmds.add(scheduleApplication.getTag());
       cmds.add(URLEncoder.encode(scheduleApplication.getParams(), CharEncoding.UTF_8));
-      cmds.add(scheduleApplication.getCron());
+      cmds.add(URLEncoder.encode(scheduleApplication.getCron(), CharEncoding.UTF_8));
+
+      LOGGER.info(URLEncoder.encode(scheduleApplication.getParams(), CharEncoding.UTF_8));
       cmds.add(String.valueOf(scheduleApplication.getTimeout()));
       cmds.add(
           String.valueOf(scheduleApplication.getApplicationRecord().getScheduleTime().getTime()));

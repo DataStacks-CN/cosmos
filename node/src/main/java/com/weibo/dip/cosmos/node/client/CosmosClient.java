@@ -60,13 +60,18 @@ public class CosmosClient implements CosmosService {
   }
 
   @Override
-  public void start(Application application) throws Exception {
-    schedulerService.start(application);
+  public void start(String name, String queue) throws Exception {
+    schedulerService.start(name, queue);
   }
 
   @Override
   public void stop(String name, String queue) throws Exception {
     schedulerService.stop(name, queue);
+  }
+
+  @Override
+  public boolean isScheduled(String name, String queue) throws Exception {
+    return schedulerService.isScheduled(name, queue);
   }
 
   @Override

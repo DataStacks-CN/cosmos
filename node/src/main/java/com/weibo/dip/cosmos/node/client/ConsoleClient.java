@@ -287,7 +287,14 @@ public class ConsoleClient {
 
       System.out.println(String.format("Application %s:%s deleted", name, queue));
     } else if (line.hasOption(Conf.OPTION_START)) {
-      // do nothing
+      String nameAndQueue = line.getOptionValue(Conf.OPTION_START);
+
+      String name = nameAndQueue.split(Symbols.COLON)[0];
+      String queue = nameAndQueue.split(Symbols.COLON)[1];
+
+      client.start(name, queue);
+
+      System.out.println(String.format("Application %s:%s started", name, queue));
     } else if (line.hasOption(Conf.OPTION_STOP)) {
       String nameAndQueue = line.getOptionValue(Conf.OPTION_STOP);
 
@@ -296,7 +303,7 @@ public class ConsoleClient {
 
       client.stop(name, queue);
 
-      System.out.println("Application " + name + Symbols.COLON + queue + " stoped");
+      System.out.println(String.format("Application %s:%s stoped", name, queue));
     } else if (line.hasOption(Conf.OPTION_APP)) {
       String nameAndQueue = line.getOptionValue(Conf.OPTION_APP);
 

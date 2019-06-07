@@ -4,21 +4,21 @@ import logging
 import commands
 
 if __name__ == '__main__':
-    params = sys.argv
+    args = sys.argv
 
-    name = params[1]
-    queue = params[2]
-    user = params[3]
-    priority = params[4]
-    cores = params[5]
-    mems = params[6]
-    repository = params[7]
-    tag = params[8]
-    params = urllib.unquote(params[9])
-    cron = param[10]
-    timeout = param[11]
-    schedule_time = params[12]
-    log_dir = params[13]
+    name = args[1]
+    queue = args[2]
+    user = args[3]
+    priority = args[4]
+    cores = args[5]
+    mems = args[6]
+    repository = args[7]
+    tag = args[8]
+    params = urllib.unquote_plus(args[9])
+    cron = urllib.unquote_plus(args[10])
+    timeout = args[11]
+    schedule_time = args[12]
+    log_dir = args[13]
 
     app_name = name
 

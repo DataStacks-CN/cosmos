@@ -21,9 +21,11 @@ public interface CosmosService {
 
   void delete(String name, String queue) throws Exception;
 
-  void start(Application application) throws Exception;
+  void start(String name, String queue) throws Exception;
 
   void stop(String name, String queue) throws Exception;
+
+  boolean isScheduled(String name, String queue) throws Exception;
 
   List<String> queues() throws Exception;
 
