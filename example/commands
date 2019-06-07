@@ -14,7 +14,7 @@ vim /tmp/example_application.json
   "timeout": 10
 }
 
-Start
+Add
 
 python bin/client.py -start /tmp/example_application.json
 

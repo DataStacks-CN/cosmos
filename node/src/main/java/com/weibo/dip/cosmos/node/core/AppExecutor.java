@@ -24,9 +24,9 @@ import com.weibo.dip.durian.util.DatetimeUtil;
 import com.weibo.dip.durian.util.GsonUtil;
 import java.io.File;
 import java.io.IOException;
+import java.net.URLEncoder;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -39,7 +39,7 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang.CharEncoding;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.commons.lang3.time.DateUtils;
@@ -56,6 +56,7 @@ import org.slf4j.LoggerFactory;
  * @author yurun
  */
 public class AppExecutor {
+
   private static final Logger LOGGER = LoggerFactory.getLogger(AppExecutor.class);
 
   private static final long DEFAULT_TIME_SLEEP = 10 * 1000;
@@ -79,6 +80,7 @@ public class AppExecutor {
   private SchedulerOperator operator;
 
   private static class QueueResource {
+
     private String queue;
 
     private int cores;
@@ -374,6 +376,7 @@ public class AppExecutor {
   private Submitter submitter = new Submitter();
 
   private class Executor implements Runnable {
+
     private DockerClient dockerClient;
 
     private ScheduleApplication scheduleApplication;
@@ -487,7 +490,7 @@ public class AppExecutor {
               + scheduleApplication.getName()
               + Symbols.SLASH
               + DatetimeUtil.DATETIME_FORMAT.format(
-                  scheduleApplication.getApplicationRecord().getScheduleTime());
+              scheduleApplication.getApplicationRecord().getScheduleTime());
 
       FileUtils.deleteDirectory(new File(containerLog));
       FileUtils.forceMkdir(new File(containerLog));
@@ -505,18 +508,17 @@ public class AppExecutor {
       cmds.add(scheduleApplication.getName());
       cmds.add(scheduleApplication.getQueue());
       cmds.add(scheduleApplication.getUser());
-      cmds.add(
-          String.valueOf(scheduleApplication.getApplicationRecord().getScheduleTime().getTime()));
-      cmds.add(containerLog);
-
       cmds.add(String.valueOf(scheduleApplication.getPriority()));
       cmds.add(String.valueOf(scheduleApplication.getCores()));
       cmds.add(String.valueOf(scheduleApplication.getMems()));
+      cmds.add(scheduleApplication.getRepository());
+      cmds.add(scheduleApplication.getTag());
+      cmds.add(URLEncoder.encode(scheduleApplication.getParams(), CharEncoding.UTF_8));
+      cmds.add(scheduleApplication.getCron());
       cmds.add(String.valueOf(scheduleApplication.getTimeout()));
-
-      if (ArrayUtils.isNotEmpty(scheduleApplication.getParams())) {
-        cmds.addAll(Arrays.asList(scheduleApplication.getParams()));
-      }
+      cmds.add(
+          String.valueOf(scheduleApplication.getApplicationRecord().getScheduleTime().getTime()));
+      cmds.add(containerLog);
 
       String cmd = StringUtils.join(cmds, Symbols.SPACE);
 
@@ -704,12 +706,16 @@ public class AppExecutor {
     operator.addOrUpdateApplicationRecord(applicationRecord);
   }
 
-  /** start executor. */
+  /**
+   * start executor.
+   */
   public void start() {
     submitter.start();
   }
 
-  /** stop executor. */
+  /**
+   * stop executor.
+   */
   public void stop() {
     submitter.interrupt();
 

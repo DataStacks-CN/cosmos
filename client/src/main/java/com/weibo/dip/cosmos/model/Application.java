@@ -9,6 +9,7 @@ import java.io.Serializable;
  * @author yurun
  */
 public class Application implements Serializable {
+
   private String name;
   private String queue;
   private String user;
@@ -17,11 +18,12 @@ public class Application implements Serializable {
   private int mems;
   private String repository;
   private String tag;
-  private String[] params;
+  private String params;
   private String cron;
   private int timeout;
 
-  public Application() {}
+  public Application() {
+  }
 
   /**
    * Construct a application instance.
@@ -46,7 +48,7 @@ public class Application implements Serializable {
       int mems,
       String repository,
       String tag,
-      String[] params,
+      String params,
       String cron,
       int timeout) {
     this.name = name;
@@ -130,11 +132,11 @@ public class Application implements Serializable {
     this.tag = tag;
   }
 
-  public String[] getParams() {
+  public String getParams() {
     return params;
   }
 
-  public void setParams(String[] params) {
+  public void setParams(String params) {
     this.params = params;
   }
 
@@ -152,5 +154,23 @@ public class Application implements Serializable {
 
   public void setTimeout(int timeout) {
     this.timeout = timeout;
+  }
+
+  @Override
+  public String toString() {
+    final StringBuffer sb = new StringBuffer("Application{");
+    sb.append("name='").append(name).append('\'');
+    sb.append(", queue='").append(queue).append('\'');
+    sb.append(", user='").append(user).append('\'');
+    sb.append(", priority=").append(priority);
+    sb.append(", cores=").append(cores);
+    sb.append(", mems=").append(mems);
+    sb.append(", repository='").append(repository).append('\'');
+    sb.append(", tag='").append(tag).append('\'');
+    sb.append(", params='").append(params).append('\'');
+    sb.append(", cron='").append(cron).append('\'');
+    sb.append(", timeout=").append(timeout);
+    sb.append('}');
+    return sb.toString();
   }
 }

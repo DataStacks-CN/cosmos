@@ -15,11 +15,13 @@ import java.util.List;
 import java.util.Objects;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.dbutils.QueryRunner;
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
-/** Scheduler db operator. */
+/**
+ * Scheduler db operator.
+ */
 public class SchedulerOperator {
+
   private QueryRunner queryRunner;
 
   public SchedulerOperator(SchedulerDataSource schedulerDataSource) {
@@ -42,13 +44,6 @@ public class SchedulerOperator {
 
     String sql = StringUtils.join(sqls, Symbols.SPACE);
 
-    String paramsStr = "";
-
-    String[] params = application.getParams();
-    if (ArrayUtils.isNotEmpty(params)) {
-      paramsStr = StringUtils.join(params, Symbols.SPACE);
-    }
-
     return queryRunner.update(
         sql,
         application.getName(),
@@ -59,7 +54,7 @@ public class SchedulerOperator {
         application.getMems(),
         application.getRepository(),
         application.getTag(),
-        paramsStr,
+        application.getParams(),
         application.getCron(),
         application.getTimeout());
   }
@@ -123,13 +118,6 @@ public class SchedulerOperator {
 
     String sql = StringUtils.join(sqls, Symbols.SPACE);
 
-    String paramsStr = "";
-
-    String[] params = application.getParams();
-    if (ArrayUtils.isNotEmpty(params)) {
-      paramsStr = StringUtils.join(params, Symbols.SPACE);
-    }
-
     return queryRunner.update(
         sql,
         application.getUser(),
@@ -138,7 +126,7 @@ public class SchedulerOperator {
         application.getMems(),
         application.getRepository(),
         application.getTag(),
-        paramsStr,
+        application.getParams(),
         application.getCron(),
         application.getTimeout(),
         application.getName(),

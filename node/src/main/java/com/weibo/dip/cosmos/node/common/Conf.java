@@ -11,8 +11,11 @@ public class Conf {
   public static final String LOG_START = "start.log";
   public static final String LOG_CONTAINER = "container.log";
 
-  public static final String OPTION_START = "start";
+  public static final String OPTION_ADD = "add";
   public static final String OPTION_UPDATE = "update";
+  public static final String OPTION_DELETE = "delete";
+
+  public static final String OPTION_START = "start";
   public static final String OPTION_STOP = "stop";
   public static final String OPTION_APP = "app";
   public static final String OPTION_QUEUES = "queues";
