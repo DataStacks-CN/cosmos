@@ -1,7 +1,6 @@
 package com.weibo.dip.cosmos.node.client;
 
 import com.google.common.base.Preconditions;
-import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.weibo.dip.cosmos.model.Application;
@@ -34,8 +33,11 @@ import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.CharEncoding;
 import org.apache.commons.lang.StringUtils;
 
-/** Console node service. */
+/**
+ * Console node service.
+ */
 public class ConsoleClient {
+
   private static final ClasspathProperties PROPERTIES;
 
   static {
@@ -74,13 +76,22 @@ public class ConsoleClient {
     OptionGroup group = new OptionGroup();
 
     group.addOption(
-        Option.builder(Conf.OPTION_START).hasArg(true).argName("app.json").required(false).build());
+        Option.builder(Conf.OPTION_ADD).hasArg(true).argName("add.json").required(false).build());
     group.addOption(
         Option.builder(Conf.OPTION_UPDATE)
             .hasArg(true)
             .argName("update.json")
             .required(false)
             .build());
+    group.addOption(
+        Option.builder(Conf.OPTION_DELETE)
+            .hasArg(true)
+            .argName("name:queue")
+            .required(false)
+            .build());
+
+    group.addOption(
+        Option.builder(Conf.OPTION_START).hasArg(true).argName("app.json").required(false).build());
     group.addOption(
         Option.builder(Conf.OPTION_STOP)
             .hasArg(true)
@@ -208,8 +219,8 @@ public class ConsoleClient {
 
     assert Objects.nonNull(client);
 
-    if (line.hasOption(Conf.OPTION_START)) {
-      String jsonPath = line.getOptionValue(Conf.OPTION_START);
+    if (line.hasOption(Conf.OPTION_ADD)) {
+      String jsonPath = line.getOptionValue(Conf.OPTION_ADD);
 
       String json =
           StringUtils.join(
@@ -227,23 +238,15 @@ public class ConsoleClient {
       int mems = jsonObject.getAsJsonPrimitive("mems").getAsInt();
       String repository = jsonObject.getAsJsonPrimitive("repository").getAsString();
       String tag = jsonObject.getAsJsonPrimitive("tag").getAsString();
-
-      JsonArray jsonArray = jsonObject.getAsJsonArray("params");
-
-      String[] params = new String[jsonArray.size()];
-
-      for (int index = 0; index < params.length; index++) {
-        params[index] = jsonArray.get(index).getAsJsonPrimitive().getAsString();
-      }
-
+      String params = jsonObject.getAsJsonObject("params").toString();
       String cron = jsonObject.getAsJsonPrimitive("cron").getAsString();
       int timeout = jsonObject.getAsJsonPrimitive("timeout").getAsInt();
 
-      client.start(
+      client.add(
           new Application(
               name, queue, user, priority, cores, mems, repository, tag, params, cron, timeout));
 
-      System.out.println("Application " + name + Symbols.COLON + queue + " started");
+      System.out.println(String.format("Application %s:%s added", name, queue));
     } else if (line.hasOption(Conf.OPTION_UPDATE)) {
       String jsonPath = line.getOptionValue(Conf.OPTION_UPDATE);
 
@@ -263,22 +266,28 @@ public class ConsoleClient {
       int mems = jsonObject.getAsJsonPrimitive("mems").getAsInt();
       String repository = jsonObject.getAsJsonPrimitive("repository").getAsString();
       String tag = jsonObject.getAsJsonPrimitive("tag").getAsString();
-
-      JsonArray jsonArray = jsonObject.getAsJsonArray("params");
-
-      String[] params = new String[jsonArray.size()];
-
-      for (int index = 0; index < params.length; index++) {
-        params[index] = jsonArray.get(index).getAsJsonPrimitive().getAsString();
-      }
-
+      String params = jsonObject.getAsJsonObject("params").toString();
+      String cron = jsonObject.getAsJsonPrimitive("cron").getAsString();
       int timeout = jsonObject.getAsJsonPrimitive("timeout").getAsInt();
 
       client.update(
           new Application(
-              name, queue, user, priority, cores, mems, repository, tag, params, null, timeout));
+              name, queue, user, priority, cores, mems, repository, tag, params, cron, timeout));
 
-      System.out.println("Application " + name + Symbols.COLON + queue + " updated");
+      System.out.println(String
+          .format("Application %s:%s updated", name,
+              queue));
+    } else if (line.hasOption(Conf.OPTION_DELETE)) {
+      String nameAndQueue = line.getOptionValue(Conf.OPTION_DELETE);
+
+      String name = nameAndQueue.split(Symbols.COLON)[0];
+      String queue = nameAndQueue.split(Symbols.COLON)[1];
+
+      client.delete(name, queue);
+
+      System.out.println(String.format("Application %s:%s deleted", name, queue));
+    } else if (line.hasOption(Conf.OPTION_START)) {
+      // do nothing
     } else if (line.hasOption(Conf.OPTION_STOP)) {
       String nameAndQueue = line.getOptionValue(Conf.OPTION_STOP);
 

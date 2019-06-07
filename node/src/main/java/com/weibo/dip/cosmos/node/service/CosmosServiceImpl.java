@@ -38,6 +38,7 @@ import org.quartz.JobDataMap;
 import org.quartz.JobDetail;
 import org.quartz.JobKey;
 import org.quartz.Scheduler;
+import org.quartz.SchedulerException;
 import org.quartz.Trigger;
 import org.quartz.TriggerBuilder;
 import org.quartz.TriggerKey;
@@ -53,6 +54,7 @@ import org.slf4j.LoggerFactory;
  * @author yurun
  */
 public class CosmosServiceImpl extends HessianServlet implements CosmosService {
+
   private static final Logger LOGGER = LoggerFactory.getLogger(CosmosServiceImpl.class);
 
   private ClasspathProperties properties;
@@ -79,9 +81,63 @@ public class CosmosServiceImpl extends HessianServlet implements CosmosService {
     this.operator = operator;
   }
 
+  private boolean scheduled(String name, String queue) throws SchedulerException {
+    return scheduler.checkExists(new JobKey(name, queue));
+  }
+
   @Override
   public boolean connect() {
     return true;
+  }
+
+  @Override
+  public void add(Application application) throws Exception {
+    Preconditions.checkState(Objects.nonNull(application), "Application must be specifiled");
+
+    Preconditions.checkState(
+        !operator.existApplication(application.getName(), application.getQueue()),
+        "Application %s:%s already existed",
+        application.getName(), application.getQueue());
+
+    operator.addApplication(application);
+
+    LOGGER.info(
+        "Application {}:{} added: {}",
+        application.getName(), application.getQueue(),
+        application);
+  }
+
+  @Override
+  public void update(Application application) throws Exception {
+    Preconditions.checkState(Objects.nonNull(application), "Application must be specifiled");
+
+    Preconditions.checkState(
+        operator.existApplication(application.getName(), application.getQueue()),
+        "Application %s:%s not exist",
+        application.getName(), application.getQueue());
+    Preconditions.checkState(!scheduled(application.getName(), application.getQueue()),
+        "Application %s:%s still handles the scheduling state", application.getName(),
+        application.getQueue());
+
+    operator.updateApplication(application);
+    LOGGER.info(
+        "Application {}:{} updated: {}",
+        application.getName(), application.getQueue(),
+        application);
+  }
+
+  @Override
+  public void delete(String name, String queue) throws Exception {
+    Preconditions.checkState(
+        StringUtils.isNotEmpty(name) && StringUtils.isNotEmpty(queue),
+        "name and queue must be specified");
+
+    Preconditions.checkState(!scheduled(name, queue),
+        "Application %s:%s still handles the scheduling state", name, queue);
+
+    operator.deleteApplication(name, queue);
+
+    LOGGER.info("Application {}:{} deleted", name, queue);
   }
 
   @Override
@@ -130,25 +186,6 @@ public class CosmosServiceImpl extends HessianServlet implements CosmosService {
         application.getName(),
         application.getQueue(),
         application.getCron());
-  }
-
-  @Override
-  public void update(Application application) throws Exception {
-    JobKey jobKey = new JobKey(application.getName(), application.getQueue());
-
-    Preconditions.checkState(
-        scheduler.checkExists(jobKey),
-        "Application %s:%s does not exist",
-        application.getName(),
-        application.getQueue());
-
-    Application oldApplication =
-        operator.getApplication(application.getName(), application.getQueue());
-
-    // cron can't be modified
-    application.setCron(oldApplication.getCron());
-
-    operator.updateApplication(application);
   }
 
   @Override
@@ -458,8 +495,8 @@ public class CosmosServiceImpl extends HessianServlet implements CosmosService {
     ApplicationRecord record = operator.getApplicationRecord(name, queue, scheduleTime);
     if (Objects.isNull(record)
         || !(record.getState().equals(ApplicationState.SUCCESS)
-            || record.getState().equals(ApplicationState.FAILED)
-            || record.getState().equals(ApplicationState.KILLED))) {
+        || record.getState().equals(ApplicationState.FAILED)
+        || record.getState().equals(ApplicationState.KILLED))) {
       return null;
     }
 

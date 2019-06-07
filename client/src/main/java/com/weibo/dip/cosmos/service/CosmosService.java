@@ -8,13 +8,20 @@ import com.weibo.dip.cosmos.model.ScheduleApplication;
 import java.util.Date;
 import java.util.List;
 
-/** Cosmos Service. */
+/**
+ * Cosmos Service.
+ */
 public interface CosmosService {
+
   boolean connect();
 
-  void start(Application application) throws Exception;
+  void add(Application application) throws Exception;
 
   void update(Application application) throws Exception;
+
+  void delete(String name, String queue) throws Exception;
+
+  void start(Application application) throws Exception;
 
   void stop(String name, String queue) throws Exception;
 

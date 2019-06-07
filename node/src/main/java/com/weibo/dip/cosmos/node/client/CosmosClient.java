@@ -12,8 +12,11 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/** Scheduler service. */
+/**
+ * Scheduler service.
+ */
 public class CosmosClient implements CosmosService {
+
   private static final Logger LOGGER = LoggerFactory.getLogger(CosmosClient.class);
 
   private CosmosService schedulerService;
@@ -42,13 +45,23 @@ public class CosmosClient implements CosmosService {
   }
 
   @Override
-  public void start(Application application) throws Exception {
-    schedulerService.start(application);
+  public void add(Application application) throws Exception {
+    schedulerService.add(application);
   }
 
   @Override
   public void update(Application application) throws Exception {
     schedulerService.update(application);
+  }
+
+  @Override
+  public void delete(String name, String queue) throws Exception {
+    schedulerService.delete(name, queue);
+  }
+
+  @Override
+  public void start(Application application) throws Exception {
+    schedulerService.start(application);
   }
 
   @Override
