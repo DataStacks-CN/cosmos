@@ -325,7 +325,8 @@ public class ConsoleClient {
           "tag",
           "params",
           "cron",
-          "timeout(s)");
+          "timeout(s)",
+          "state");
 
       if (Objects.nonNull(application)) {
         table.addRow(
@@ -339,7 +340,9 @@ public class ConsoleClient {
             application.getTag(),
             ArrayUtils.toString(application.getParams()),
             application.getCron(),
-            String.valueOf(application.getTimeout()));
+            String.valueOf(application.getTimeout()),
+            client.isScheduled(application.getName(), application.getQueue()) ? "started"
+                : "stoped");
       }
 
       table.print();
@@ -375,7 +378,8 @@ public class ConsoleClient {
           "tag",
           "params",
           "cron",
-          "timeout(s)");
+          "timeout(s)",
+          "state");
 
       if (CollectionUtils.isNotEmpty(applications)) {
         for (Application application : applications) {
@@ -390,7 +394,9 @@ public class ConsoleClient {
               application.getTag(),
               ArrayUtils.toString(application.getParams()),
               application.getCron(),
-              String.valueOf(application.getTimeout()));
+              String.valueOf(application.getTimeout()),
+              client.isScheduled(application.getName(), application.getQueue()) ? "started"
+                  : "stoped");
         }
       }
 
