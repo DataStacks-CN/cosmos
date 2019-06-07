@@ -10,6 +10,7 @@ import java.io.Serializable;
  * @author yurun
  */
 public class ScheduleApplication extends Application implements Serializable {
+
   private ApplicationRecord applicationRecord;
 
   /**
@@ -46,7 +47,7 @@ public class ScheduleApplication extends Application implements Serializable {
   @Override
   public String getUniqeName() {
     return super.getUniqeName()
-        + Symbols.UNDERLINE
+        + Symbols.COLON
         + DatetimeUtil.DATETIME_FORMAT.format(applicationRecord.getScheduleTime());
   }
 }
