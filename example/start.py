@@ -20,8 +20,6 @@ if __name__ == '__main__':
     schedule_time = args[12]
     log_dir = args[13]
 
-    app_name = name
-
     log_file = log_dir + '/start.log'
 
     logging.basicConfig(filename = log_file, level = logging.INFO)
