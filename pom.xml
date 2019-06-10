@@ -7,10 +7,11 @@
   <groupId>com.weibo.dip</groupId>
   <artifactId>cosmos</artifactId>
   <packaging>pom</packaging>
-  <version>0.1.4</version>
+  <version>0.1.6</version>
   <modules>
     <module>client</module>
     <module>node</module>
+    <module>alarm</module>
   </modules>
 
   <distributionManagement>
