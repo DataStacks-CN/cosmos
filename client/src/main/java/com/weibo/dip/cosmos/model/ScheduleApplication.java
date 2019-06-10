@@ -47,7 +47,7 @@ public class ScheduleApplication extends Application implements Serializable {
   @Override
   public String getUniqeName() {
     return super.getUniqeName()
-        + Symbols.COLON
+        + Symbols.LINE_THROUGH
         + DatetimeUtil.DATETIME_FORMAT.format(applicationRecord.getScheduleTime());
   }
 }

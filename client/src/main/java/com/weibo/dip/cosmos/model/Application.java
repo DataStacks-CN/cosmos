@@ -81,7 +81,7 @@ public class Application implements Serializable {
   }
 
   public String getUniqeName() {
-    return name + Symbols.UNDERLINE + queue;
+    return name + Symbols.LINE_THROUGH + queue;
   }
 
   public String getUser() {
