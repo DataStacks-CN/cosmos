@@ -17,6 +17,11 @@ git checkout ${tag}
 
 mvn clean package -pl node -am
 
+## 数据库/表创建（MySQL）
+
+sql/cosmos.sql
+sql/quartz.sql
+
 ## 配置
 
 vim conf/cosmos.properties
