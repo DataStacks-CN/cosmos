@@ -121,9 +121,11 @@ python bin/cosmos.py -stop
 
 ## 操作
 
-### start
+### add
 
-python bin/client.py -start /tmp/start.json
+新增应用
+
+python bin/client.py -add /tmp/add.json
 
 ```text
 {
@@ -135,13 +137,13 @@ python bin/client.py -start /tmp/start.json
     "mems": 6144,
     "repository": "registry.api.weibo.com/dippub/pinot_import_application",
     "tag": "0.0.1",
-    "params": [],
+    "params": {},
     "cron": "0 45 16 * * ?",
     "timeout": 7200
 }
 ```
 
-开启应用调度
+应用信息
 
 * name
    应用名称
@@ -168,21 +170,29 @@ python bin/client.py -start /tmp/start.json
    应用运行时使用的Docker Image版本号
    
 * params
-   应用运行时接收的参数值，默认数组为空；
+   应用运行时接收的参数值，Json格式，默认为空；
    
 * cron
    Quartz Cron表达式
    
 * timeout
    应用运行超时时间，单位：秒
+   
+### start
+
+启动应用调度
+
+python bin/client.py -start ${name}:${queue}
 
 ### stop
 
-python bin/client.py -stop ${name}:${queue}
-
 停止应用调度
 
+python bin/client.py -stop ${name}:${queue}
+
 ### update
+
+更新应用
 
 python bin/client.py -start /tmp/update.json
 
@@ -201,7 +211,7 @@ python bin/client.py -start /tmp/update.json
 }
 ```
 
-更新应用信息
+应用信息
 
 * name
    应用名称
