@@ -219,7 +219,7 @@ python bin/client.py -start /tmp/update.json
 * queue
    队列名称
    
-update操作要求应用“name:queue”必须处于“已调度”状态，除“cron”之外，其余字段信息均可被更新
+update操作要求应用“name:queue”必须处于“新增且停止调度”的状态，其余字段信息均可被更新
 
 ### queues
 
