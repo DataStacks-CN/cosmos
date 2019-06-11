@@ -44,7 +44,7 @@ CREATE TABLE `message_queue` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `queue` varchar(100) COLLATE utf8_bin NOT NULL,
   `priority` int(11) NOT NULL,
-  `msgcontent` varchar(1000) COLLATE utf8_bin NOT NULL,
+  `msgcontent` varchar(3000) COLLATE utf8_bin NOT NULL,
   `msgtimestamp` datetime NOT NULL,
   `consumer` varchar(100) COLLATE utf8_bin NOT NULL DEFAULT '',
   PRIMARY KEY (`id`)
