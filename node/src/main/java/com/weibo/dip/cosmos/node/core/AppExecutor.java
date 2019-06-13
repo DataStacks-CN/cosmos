@@ -490,7 +490,7 @@ public class AppExecutor {
               + scheduleApplication.getName()
               + Symbols.SLASH
               + DatetimeUtil.DATETIME_FORMAT.format(
-              scheduleApplication.getApplicationRecord().getScheduleTime());
+                  scheduleApplication.getApplicationRecord().getScheduleTime());
 
       FileUtils.deleteDirectory(new File(containerLog));
       FileUtils.forceMkdir(new File(containerLog));
@@ -579,6 +579,10 @@ public class AppExecutor {
                       + " container "
                       + containerId
                       + " execute timeout, killed");
+            } else {
+              Thread.sleep(DEFAULT_TIME_SLEEP);
+
+              LOGGER.debug("Application {} is running...", scheduleApplication.getUniqeName());
             }
           } else {
             int code = getExitCode(containerId);
@@ -708,16 +712,12 @@ public class AppExecutor {
     operator.addOrUpdateApplicationRecord(applicationRecord);
   }
 
-  /**
-   * start executor.
-   */
+  /** start executor. */
   public void start() {
     submitter.start();
   }
 
-  /**
-   * stop executor.
-   */
+  /** stop executor. */
   public void stop() {
     submitter.interrupt();
 
