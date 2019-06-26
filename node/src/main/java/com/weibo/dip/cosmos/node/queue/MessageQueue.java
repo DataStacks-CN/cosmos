@@ -6,6 +6,7 @@ import com.weibo.dip.cosmos.node.db.handler.LongHandler;
 import java.sql.Connection;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 import javax.sql.DataSource;
 import org.apache.commons.collections.CollectionUtils;
@@ -85,32 +86,41 @@ public class MessageQueue {
    * @throws Exception if access db error
    */
   public Message consume(String queue, Date timestamp) throws Exception {
-    Message message = null;
+
+    Message message;
 
     String consumer = UUID.randomUUID().toString();
 
     try (Connection conn = dataSource.getConnection()) {
+
+      String querySql =
+          "select * from message_queue"
+              + " where queue = ? and msgtimestamp <= ? and consumer = ''"
+              + " order by priority asc, msgtimestamp asc"
+              + " limit 1";
+
+      message = queryRunner.query(conn, querySql, new MessageHandler(), queue, timestamp).get(0);
+
+      if (Objects.isNull(message)) {
+        return null;
+      }
+
       try {
+
         conn.setAutoCommit(false);
 
-        String updateSql =
-            "update message_queue"
-                + " set consumer = ?"
-                + " where queue = ? and msgtimestamp <= ? and consumer = ''"
-                + " order by priority asc, msgtimestamp asc"
-                + " limit 1";
+        String updateSql = "update message_queue set consumer = ? where id = ?";
 
-        int rows = queryRunner.update(conn, updateSql, consumer, queue, timestamp);
+        int rows = queryRunner.update(conn, updateSql, consumer, message.getId());
 
         if (rows == 1) {
-          String selectSql = "select * from message_queue where consumer = ?";
 
-          message = queryRunner.query(conn, selectSql, new MessageHandler(), consumer).get(0);
+          String deleteSql = "delete from message_queue where id = ?";
 
-          String deleteSql = "delete from message_queue where consumer = ?";
+          queryRunner.update(conn, deleteSql, message.getId());
+        } else {
 
-          // 没有判断
-          queryRunner.update(conn, deleteSql, consumer);
+          message = null;
         }
 
         conn.commit();
@@ -119,6 +129,7 @@ public class MessageQueue {
 
         throw e;
       }
+
     }
 
     return message;
