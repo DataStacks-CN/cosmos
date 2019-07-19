@@ -22,9 +22,11 @@ import com.weibo.dip.durian.ClasspathProperties;
 import com.weibo.dip.durian.Symbols;
 import com.weibo.dip.durian.util.DatetimeUtil;
 import com.weibo.dip.durian.util.GsonUtil;
+import com.weibo.dip.durian.util.IpUtil;
 import java.io.File;
 import java.io.IOException;
 import java.net.URLEncoder;
+import java.net.UnknownHostException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -708,8 +710,13 @@ public class AppExecutor {
 
     applicationRecord.setUpdateTime(new Date());
     applicationRecord.setState(state);
-
+    try {
+      applicationRecord.setHost(IpUtil.getLocalhost());
+    } catch (UnknownHostException e) {
+      LOGGER.warn("Update host error, keep default");
+    }
     operator.addOrUpdateApplicationRecord(applicationRecord);
+
   }
 
   /** start executor. */

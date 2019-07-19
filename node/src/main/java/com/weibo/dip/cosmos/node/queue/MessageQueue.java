@@ -99,9 +99,11 @@ public class MessageQueue {
               + " order by priority asc, msgtimestamp asc"
               + " limit 1";
 
-      message = queryRunner.query(conn, querySql, new MessageHandler(), queue, timestamp).get(0);
+      List<Message> messages = queryRunner.query(conn, querySql, new MessageHandler(), queue, timestamp);
 
-      if (Objects.isNull(message)) {
+      if (CollectionUtils.isNotEmpty(messages)) {
+        message = messages.get(0);
+      } else {
         return null;
       }
 
@@ -109,7 +111,7 @@ public class MessageQueue {
 
         conn.setAutoCommit(false);
 
-        String updateSql = "update message_queue set consumer = ? where id = ?";
+        String updateSql = "update message_queue set consumer = ? where id = ? and consumer = ''";
 
         int rows = queryRunner.update(conn, updateSql, consumer, message.getId());
 
