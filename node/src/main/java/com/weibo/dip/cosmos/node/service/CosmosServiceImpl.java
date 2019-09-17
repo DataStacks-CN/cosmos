@@ -22,6 +22,7 @@ import com.weibo.dip.durian.util.DatetimeUtil;
 import com.weibo.dip.durian.util.GsonUtil;
 import com.weibo.dip.durian.util.IpUtil;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -32,6 +33,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.CharEncoding;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.quartz.CronScheduleBuilder;
 import org.quartz.JobBuilder;
 import org.quartz.JobDataMap;
@@ -483,35 +485,43 @@ public class CosmosServiceImpl extends HessianServlet implements CosmosService {
   public String log(String name, String queue, Date scheduleTime) throws Exception {
     ApplicationRecord record = operator.getApplicationRecord(name, queue, scheduleTime);
     if (Objects.isNull(record)
-        || !(record.getState().equals(ApplicationState.SUCCESS)
-        || record.getState().equals(ApplicationState.FAILED)
-        || record.getState().equals(ApplicationState.KILLED))) {
-      return null;
+        || record.getState().equals(ApplicationState.QUEUED)
+        || record.getState().equals(ApplicationState.PENDING)) {
+      return "";
     }
 
     // container log
     String containerLog =
         properties.getString("docker.container.log")
             + Symbols.SLASH
+            + record.getQueue()
+            + Symbols.SLASH
             + record.getName()
             + Symbols.SLASH
             + DatetimeUtil.DATETIME_FORMAT.format(record.getScheduleTime());
 
+
     StringBuilder logs = new StringBuilder();
 
-    logs.append(Conf.LOG_START).append(Symbols.NEWLINE);
+    try {
+      logs.append(Conf.LOG_START).append(Symbols.NEWLINE);
 
-    List<String> lines =
-        FileUtils.readLines(new File(containerLog, Conf.LOG_START), CharEncoding.UTF_8);
-    if (CollectionUtils.isNotEmpty(lines)) {
-      lines.forEach(line -> logs.append(line).append(Symbols.NEWLINE));
-    }
+      List<String> lines =
+          FileUtils.readLines(new File(containerLog, Conf.LOG_START), CharEncoding.UTF_8);
+      if (CollectionUtils.isNotEmpty(lines)) {
+        lines.forEach(line -> logs.append(line).append(Symbols.NEWLINE));
+      }
 
-    logs.append(Conf.LOG_CONTAINER).append(Symbols.NEWLINE);
+      logs.append(Conf.LOG_CONTAINER).append(Symbols.NEWLINE);
 
-    lines = FileUtils.readLines(new File(containerLog, Conf.LOG_CONTAINER), CharEncoding.UTF_8);
-    if (CollectionUtils.isNotEmpty(lines)) {
-      lines.forEach(line -> logs.append(line).append(Symbols.NEWLINE));
+      lines = FileUtils.readLines(new File(containerLog, Conf.LOG_CONTAINER), CharEncoding.UTF_8);
+      if (CollectionUtils.isNotEmpty(lines)) {
+        lines.forEach(line -> logs.append(line).append(Symbols.NEWLINE));
+      }
+    } catch (FileNotFoundException e) {
+
+      LOGGER.error(ExceptionUtils.getFullStackTrace(e));
+      return "Log file is not exist!";
     }
 
     return logs.toString();
