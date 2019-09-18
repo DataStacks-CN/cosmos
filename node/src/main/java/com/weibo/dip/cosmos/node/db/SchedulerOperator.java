@@ -17,9 +17,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.lang3.StringUtils;
 
-/**
- * Scheduler db operator.
- */
+/** Scheduler db operator. */
 public class SchedulerOperator {
 
   private QueryRunner queryRunner;
@@ -91,6 +89,12 @@ public class SchedulerOperator {
     } else {
       return null;
     }
+  }
+
+  public List<Application> getApplications(String queue) throws SQLException {
+    String sql = "select * from applications where  queue = ?";
+
+    return queryRunner.query(sql, new ApplicationHandler(), queue);
   }
 
   /**

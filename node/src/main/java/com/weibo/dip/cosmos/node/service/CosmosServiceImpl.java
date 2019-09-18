@@ -28,7 +28,6 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.CharEncoding;
@@ -44,7 +43,6 @@ import org.quartz.Trigger;
 import org.quartz.TriggerBuilder;
 import org.quartz.TriggerKey;
 import org.quartz.TriggerUtils;
-import org.quartz.impl.matchers.GroupMatcher;
 import org.quartz.spi.OperableTrigger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -94,14 +92,13 @@ public class CosmosServiceImpl extends HessianServlet implements CosmosService {
     Preconditions.checkState(
         !operator.existApplication(application.getName(), application.getQueue()),
         "Application %s:%s already existed",
-        application.getName(), application.getQueue());
+        application.getName(),
+        application.getQueue());
 
     operator.addApplication(application);
 
     LOGGER.info(
-        "Application {}:{} added: {}",
-        application.getName(), application.getQueue(),
-        application);
+        "Application {}:{} added: {}", application.getName(), application.getQueue(), application);
   }
 
   @Override
@@ -111,15 +108,19 @@ public class CosmosServiceImpl extends HessianServlet implements CosmosService {
     Preconditions.checkState(
         operator.existApplication(application.getName(), application.getQueue()),
         "Application %s:%s not exist",
-        application.getName(), application.getQueue());
-    Preconditions.checkState(!isScheduled(application.getName(), application.getQueue()),
-        "Application %s:%s still handles the scheduling state", application.getName(),
+        application.getName(),
+        application.getQueue());
+    Preconditions.checkState(
+        !isScheduled(application.getName(), application.getQueue()),
+        "Application %s:%s still handles the scheduling state",
+        application.getName(),
         application.getQueue());
 
     operator.updateApplication(application);
     LOGGER.info(
         "Application {}:{} updated: {}",
-        application.getName(), application.getQueue(),
+        application.getName(),
+        application.getQueue(),
         application);
   }
 
@@ -129,8 +130,11 @@ public class CosmosServiceImpl extends HessianServlet implements CosmosService {
         StringUtils.isNotEmpty(name) && StringUtils.isNotEmpty(queue),
         "name and queue must be specified");
 
-    Preconditions.checkState(!isScheduled(name, queue),
-        "Application %s:%s still handles the scheduling state", name, queue);
+    Preconditions.checkState(
+        !isScheduled(name, queue),
+        "Application %s:%s still handles the scheduling state",
+        name,
+        queue);
 
     operator.deleteApplication(name, queue);
 
@@ -145,10 +149,10 @@ public class CosmosServiceImpl extends HessianServlet implements CosmosService {
 
     Application application = get(name, queue);
 
-    Preconditions
-        .checkState(Objects.nonNull(application), "Application %s:%s not exist", name, queue);
-    Preconditions
-        .checkState(!isScheduled(name, queue), "Application %s:%s already started", name, queue);
+    Preconditions.checkState(
+        Objects.nonNull(application), "Application %s:%s not exist", name, queue);
+    Preconditions.checkState(
+        !isScheduled(name, queue), "Application %s:%s already started", name, queue);
 
     JobDataMap data = new JobDataMap();
 
@@ -156,7 +160,9 @@ public class CosmosServiceImpl extends HessianServlet implements CosmosService {
     data.put(QuartzJob.QUEUE, queue);
 
     JobDetail job =
-        JobBuilder.newJob(QuartzJob.class).withIdentity(new JobKey(name, queue)).usingJobData(data)
+        JobBuilder.newJob(QuartzJob.class)
+            .withIdentity(new JobKey(name, queue))
+            .usingJobData(data)
             .build();
 
     Trigger trigger =
@@ -170,10 +176,7 @@ public class CosmosServiceImpl extends HessianServlet implements CosmosService {
     // schedule
     scheduler.scheduleJob(job, trigger);
 
-    LOGGER.info(
-        "Application {}:{} started",
-        application.getName(),
-        application.getQueue());
+    LOGGER.info("Application {}:{} started", application.getName(), application.getQueue());
   }
 
   @Override
@@ -230,18 +233,7 @@ public class CosmosServiceImpl extends HessianServlet implements CosmosService {
 
   @Override
   public List<Application> list(String queue) throws Exception {
-    Set<JobKey> jobKeys = scheduler.getJobKeys(GroupMatcher.groupEquals(queue));
-    if (CollectionUtils.isEmpty(jobKeys)) {
-      return null;
-    }
-
-    List<Application> applications = new ArrayList<>();
-
-    for (JobKey jobKey : jobKeys) {
-      applications.add(operator.getApplication(jobKey.getName(), jobKey.getGroup()));
-    }
-
-    return applications;
+    return operator.getApplications(queue);
   }
 
   @Override
@@ -499,7 +491,6 @@ public class CosmosServiceImpl extends HessianServlet implements CosmosService {
             + record.getName()
             + Symbols.SLASH
             + DatetimeUtil.DATETIME_FORMAT.format(record.getScheduleTime());
-
 
     StringBuilder logs = new StringBuilder();
 
