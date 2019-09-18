@@ -526,4 +526,14 @@ public class CosmosServiceImpl extends HessianServlet implements CosmosService {
 
     return logs.toString();
   }
+
+  @Override
+  public Application createApplication() {
+    return new Application();
+  }
+
+  @Override
+  public ApplicationDependency createApplicationDependency() {
+    return new ApplicationDependency();
+  }
 }
