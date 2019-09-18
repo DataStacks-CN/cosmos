@@ -158,4 +158,14 @@ public class CosmosClient implements CosmosService {
   public String log(String name, String queue, Date scheduleTime) throws Exception {
     return schedulerService.log(name, queue, scheduleTime);
   }
+
+  @Override
+  public Application createApplication() {
+    return schedulerService.createApplication();
+  }
+
+  @Override
+  public ApplicationDependency createApplicationDependency() {
+    return schedulerService.createApplicationDependency();
+  }
 }

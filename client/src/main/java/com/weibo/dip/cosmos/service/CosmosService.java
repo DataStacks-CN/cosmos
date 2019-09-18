@@ -8,9 +8,7 @@ import com.weibo.dip.cosmos.model.ScheduleApplication;
 import java.util.Date;
 import java.util.List;
 
-/**
- * Cosmos Service.
- */
+/** Cosmos Service. */
 public interface CosmosService {
 
   boolean connect();
@@ -62,4 +60,8 @@ public interface CosmosService {
   boolean kill(String name, String queue, Date scheduleTime) throws Exception;
 
   String log(String name, String queue, Date scheduleTime) throws Exception;
+
+  Application createApplication();
+
+  ApplicationDependency createApplicationDependency();
 }
