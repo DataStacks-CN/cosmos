@@ -7,6 +7,7 @@ import com.weibo.dip.cosmos.model.ApplicationRecord;
 import com.weibo.dip.cosmos.model.Message;
 import com.weibo.dip.cosmos.model.ScheduleApplication;
 import com.weibo.dip.cosmos.service.CosmosService;
+import java.sql.SQLException;
 import java.util.Date;
 import java.util.List;
 import org.slf4j.Logger;
@@ -167,5 +168,11 @@ public class CosmosClient implements CosmosService {
   @Override
   public ApplicationDependency createApplicationDependency() {
     return schedulerService.createApplicationDependency();
+  }
+
+  @Override
+  public List<ApplicationRecord> getApplicationRecordsBySate(String queue, int state)
+      throws SQLException {
+    return schedulerService.getApplicationRecordsBySate(queue,state);
   }
 }
