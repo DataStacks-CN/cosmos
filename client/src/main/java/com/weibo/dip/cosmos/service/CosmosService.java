@@ -5,6 +5,7 @@ import com.weibo.dip.cosmos.model.ApplicationDependency;
 import com.weibo.dip.cosmos.model.ApplicationRecord;
 import com.weibo.dip.cosmos.model.Message;
 import com.weibo.dip.cosmos.model.ScheduleApplication;
+import java.sql.SQLException;
 import java.util.Date;
 import java.util.List;
 
@@ -64,4 +65,8 @@ public interface CosmosService {
   Application createApplication();
 
   ApplicationDependency createApplicationDependency();
+
+
+  List<ApplicationRecord> getApplicationRecordsBySate(String queue,int state) throws SQLException;
+
 }

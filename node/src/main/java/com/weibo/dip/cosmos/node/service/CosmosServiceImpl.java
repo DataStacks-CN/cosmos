@@ -23,6 +23,7 @@ import com.weibo.dip.durian.util.GsonUtil;
 import com.weibo.dip.durian.util.IpUtil;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -526,5 +527,11 @@ public class CosmosServiceImpl extends HessianServlet implements CosmosService {
   @Override
   public ApplicationDependency createApplicationDependency() {
     return new ApplicationDependency();
+  }
+
+  @Override
+  public List<ApplicationRecord> getApplicationRecordsBySate(String queue, int state)
+      throws SQLException {
+    return operator.getApplicationRecordsBySate(queue,state);
   }
 }
