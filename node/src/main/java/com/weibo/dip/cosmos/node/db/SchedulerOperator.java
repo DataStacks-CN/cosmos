@@ -7,6 +7,7 @@ import com.weibo.dip.cosmos.model.ApplicationState;
 import com.weibo.dip.cosmos.node.db.handler.ApplicationDependencyHandler;
 import com.weibo.dip.cosmos.node.db.handler.ApplicationHandler;
 import com.weibo.dip.cosmos.node.db.handler.ApplicationRecordHandler;
+import com.weibo.dip.cosmos.node.queue.StringHandler;
 import com.weibo.dip.durian.Symbols;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -19,7 +20,6 @@ import org.apache.commons.lang3.StringUtils;
 
 /** Scheduler db operator. */
 public class SchedulerOperator {
-
   private QueryRunner queryRunner;
 
   public SchedulerOperator(SchedulerDataSource schedulerDataSource) {
@@ -91,6 +91,13 @@ public class SchedulerOperator {
     }
   }
 
+  /**
+   * Get applications of the specified queue.
+   *
+   * @param queue application queue
+   * @return applications
+   * @throws SQLException if access db error
+   */
   public List<Application> getApplications(String queue) throws SQLException {
     String sql = "select * from applications where  queue = ?";
 
@@ -309,7 +316,6 @@ public class SchedulerOperator {
         sql, new ApplicationRecordHandler(), queue, ApplicationState.RUNNING.ordinal());
   }
 
-
   /**
    * Get application records of the specified queue and state.
    *
@@ -317,13 +323,12 @@ public class SchedulerOperator {
    * @return application records
    * @throws SQLException if access db error
    */
-  public List<ApplicationRecord> getApplicationRecordsBySate(String queue,int state) throws SQLException {
+  public List<ApplicationRecord> getApplicationRecordsBySate(String queue, int state)
+      throws SQLException {
     String sql = "select * from records where queue = ? and state = ?";
 
-    return queryRunner.query(
-        sql, new ApplicationRecordHandler(), queue, state);
+    return queryRunner.query(sql, new ApplicationRecordHandler(), queue, state);
   }
-
 
   /**
    * Add or update a application dependency.
@@ -394,5 +399,17 @@ public class SchedulerOperator {
     String sql = "select * from dependencies where name = ? and queue = ?";
 
     return queryRunner.query(sql, new ApplicationDependencyHandler(), name, queue);
+  }
+
+  /**
+   * Get queues.
+   *
+   * @return queue names
+   * @throws SQLException if access db error
+   */
+  public List<String> getQueues() throws SQLException {
+    String sql = "select distinct(queue) from applications";
+
+    return queryRunner.query(sql, new StringHandler());
   }
 }
