@@ -6,7 +6,6 @@ import com.weibo.dip.cosmos.node.db.handler.LongHandler;
 import java.sql.Connection;
 import java.util.Date;
 import java.util.List;
-import java.util.Objects;
 import java.util.UUID;
 import javax.sql.DataSource;
 import org.apache.commons.collections.CollectionUtils;
@@ -99,7 +98,8 @@ public class MessageQueue {
               + " order by priority asc, msgtimestamp asc"
               + " limit 1";
 
-      List<Message> messages = queryRunner.query(conn, querySql, new MessageHandler(), queue, timestamp);
+      List<Message> messages =
+          queryRunner.query(conn, querySql, new MessageHandler(), queue, timestamp);
 
       if (CollectionUtils.isNotEmpty(messages)) {
         message = messages.get(0);
@@ -131,7 +131,6 @@ public class MessageQueue {
 
         throw e;
       }
-
     }
 
     return message;

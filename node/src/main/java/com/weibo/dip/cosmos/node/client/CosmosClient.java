@@ -10,16 +10,9 @@ import com.weibo.dip.cosmos.service.CosmosService;
 import java.sql.SQLException;
 import java.util.Date;
 import java.util.List;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-/**
- * Scheduler service.
- */
+/** Scheduler service. */
 public class CosmosClient implements CosmosService {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(CosmosClient.class);
-
   private CosmosService schedulerService;
 
   /**
@@ -73,6 +66,11 @@ public class CosmosClient implements CosmosService {
   @Override
   public boolean isScheduled(String name, String queue) throws Exception {
     return schedulerService.isScheduled(name, queue);
+  }
+
+  @Override
+  public boolean isEventDriven(String name, String queue) throws Exception {
+    return schedulerService.isEventDriven(name, queue);
   }
 
   @Override
@@ -173,6 +171,6 @@ public class CosmosClient implements CosmosService {
   @Override
   public List<ApplicationRecord> getApplicationRecordsBySate(String queue, int state)
       throws SQLException {
-    return schedulerService.getApplicationRecordsBySate(queue,state);
+    return schedulerService.getApplicationRecordsBySate(queue, state);
   }
 }

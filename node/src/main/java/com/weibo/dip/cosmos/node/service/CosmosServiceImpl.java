@@ -54,7 +54,6 @@ import org.slf4j.LoggerFactory;
  * @author yurun
  */
 public class CosmosServiceImpl extends HessianServlet implements CosmosService {
-
   private static final Logger LOGGER = LoggerFactory.getLogger(CosmosServiceImpl.class);
 
   private ClasspathProperties properties;
@@ -153,6 +152,8 @@ public class CosmosServiceImpl extends HessianServlet implements CosmosService {
     Preconditions.checkState(
         Objects.nonNull(application), "Application %s:%s not exist", name, queue);
     Preconditions.checkState(
+        !isEventDriven(name, queue), "Application %s:%s unsupport start operation", name, queue);
+    Preconditions.checkState(
         !isScheduled(name, queue), "Application %s:%s already started", name, queue);
 
     JobDataMap data = new JobDataMap();
@@ -188,6 +189,8 @@ public class CosmosServiceImpl extends HessianServlet implements CosmosService {
 
     Preconditions.checkState(
         operator.existApplication(name, queue), "Application %s:%s not exist", name, queue);
+    Preconditions.checkState(
+        !isEventDriven(name, queue), "Application %s:%s unsupport stop operation", name, queue);
 
     JobKey jobKey = new JobKey(name, queue);
     TriggerKey triggerKey = new TriggerKey(name, queue);
@@ -200,7 +203,14 @@ public class CosmosServiceImpl extends HessianServlet implements CosmosService {
 
   @Override
   public boolean isScheduled(String name, String queue) throws Exception {
-    return scheduler.checkExists(new JobKey(name, queue));
+    return !isEventDriven(name, queue) && scheduler.checkExists(new JobKey(name, queue));
+  }
+
+  @Override
+  public boolean isEventDriven(String name, String queue) throws Exception {
+    Application application = get(name, queue);
+
+    return Objects.nonNull(application) && Application.EVENT_DRIVEN.equals(application.getCron());
   }
 
   @Override
@@ -210,7 +220,7 @@ public class CosmosServiceImpl extends HessianServlet implements CosmosService {
 
   @Override
   public List<String> queues() throws Exception {
-    return scheduler.getJobGroupNames();
+    return operator.getQueues();
   }
 
   @Override
@@ -307,16 +317,51 @@ public class CosmosServiceImpl extends HessianServlet implements CosmosService {
     return operator.getApplicationRecords(name, queue, beginTime, endTime);
   }
 
-  @Override
-  public List<ScheduleApplication> repair(String name, String queue, Date beginTime, Date endTime)
-      throws Exception {
-    JobKey jobKey = new JobKey(name, queue);
+  private List<ScheduleApplication> repairEventDrivenApplication(
+      Application application, Date beginTime, Date endTime) throws Exception {
+    List<ApplicationRecord> records =
+        listRecords(application.getName(), application.getQueue(), beginTime, endTime);
+    if (CollectionUtils.isEmpty(records)) {
+      return null;
+    }
 
-    Preconditions.checkState(
-        scheduler.checkExists(jobKey), "Application %s:%s does not exist", name, queue);
+    List<ScheduleApplication> scheduleApplications = new ArrayList<>();
 
-    Application application = operator.getApplication(name, queue);
+    Date now = new Date();
 
+    for (ApplicationRecord record : records) {
+      if (record.getState().equals(ApplicationState.FAILED)
+          || record.getState().equals(ApplicationState.KILLED)) {
+        ApplicationRecord applicationRecord =
+            new ApplicationRecord(
+                record.getName(),
+                record.getQueue(),
+                IpUtil.getLocalhost(),
+                record.getScheduleTime(),
+                now,
+                ApplicationState.QUEUED);
+
+        ScheduleApplication scheduleApplication =
+            new ScheduleApplication(application, applicationRecord);
+
+        scheduleApplications.add(scheduleApplication);
+
+        this.queue.produce(
+            GsonUtil.toJson(scheduleApplication),
+            scheduleApplication.getQueue(),
+            scheduleApplication.getPriority(),
+            now);
+        operator.addOrUpdateApplicationRecord(applicationRecord);
+
+        LOGGER.info("Application {} repaired", scheduleApplication.getUniqeName());
+      }
+    }
+
+    return scheduleApplications;
+  }
+
+  private List<ScheduleApplication> repairCronApplication(
+      Application application, Date beginTime, Date endTime) throws Exception {
     List<Date> fireTimes =
         TriggerUtils.computeFireTimesBetween(
             (OperableTrigger)
@@ -336,7 +381,8 @@ public class CosmosServiceImpl extends HessianServlet implements CosmosService {
     Date now = new Date();
 
     for (Date fireTime : fireTimes) {
-      ApplicationRecord record = operator.getApplicationRecord(name, queue, fireTime);
+      ApplicationRecord record =
+          operator.getApplicationRecord(application.getName(), application.getQueue(), fireTime);
 
       if (Objects.isNull(record)
           || record.getState().equals(ApplicationState.FAILED)
@@ -370,15 +416,63 @@ public class CosmosServiceImpl extends HessianServlet implements CosmosService {
   }
 
   @Override
-  public List<ScheduleApplication> reply(String name, String queue, Date beginTime, Date endTime)
+  public List<ScheduleApplication> repair(String name, String queue, Date beginTime, Date endTime)
       throws Exception {
-    JobKey jobKey = new JobKey(name, queue);
+    Application application = get(name, queue);
 
     Preconditions.checkState(
-        scheduler.checkExists(jobKey), "Application %s:%s does not exist", name, queue);
+        Objects.nonNull(application) && scheduler.checkExists(new JobKey(name, queue)),
+        "Application %s:%s does not exist",
+        name,
+        queue);
 
-    Application application = operator.getApplication(name, queue);
+    return isEventDriven(name, queue)
+        ? repairEventDrivenApplication(application, beginTime, endTime)
+        : repairCronApplication(application, beginTime, endTime);
+  }
 
+  private List<ScheduleApplication> replayEventDrivenApplication(
+      Application application, Date beginTime, Date endTime) throws Exception {
+    List<ApplicationRecord> records =
+        listRecords(application.getName(), application.getQueue(), beginTime, endTime);
+    if (CollectionUtils.isEmpty(records)) {
+      return null;
+    }
+
+    List<ScheduleApplication> scheduleApplications = new ArrayList<>();
+
+    Date now = new Date();
+
+    for (ApplicationRecord record : records) {
+      ApplicationRecord applicationRecord =
+          new ApplicationRecord(
+              record.getName(),
+              record.getQueue(),
+              IpUtil.getLocalhost(),
+              record.getScheduleTime(),
+              now,
+              ApplicationState.QUEUED);
+
+      ScheduleApplication scheduleApplication =
+          new ScheduleApplication(application, applicationRecord);
+
+      scheduleApplications.add(scheduleApplication);
+
+      this.queue.produce(
+          GsonUtil.toJson(scheduleApplication),
+          scheduleApplication.getQueue(),
+          scheduleApplication.getPriority(),
+          now);
+      operator.addOrUpdateApplicationRecord(applicationRecord);
+
+      LOGGER.info("Application {} repaired", scheduleApplication.getUniqeName());
+    }
+
+    return scheduleApplications;
+  }
+
+  private List<ScheduleApplication> replayCronApplication(
+      Application application, Date beginTime, Date endTime) throws Exception {
     List<Date> fireTimes =
         TriggerUtils.computeFireTimesBetween(
             (OperableTrigger)
@@ -423,6 +517,22 @@ public class CosmosServiceImpl extends HessianServlet implements CosmosService {
     }
 
     return scheduleApplications;
+  }
+
+  @Override
+  public List<ScheduleApplication> reply(String name, String queue, Date beginTime, Date endTime)
+      throws Exception {
+    Application application = get(name, queue);
+
+    Preconditions.checkState(
+        Objects.nonNull(application) && scheduler.checkExists(new JobKey(name, queue)),
+        "Application %s:%s does not exist",
+        name,
+        queue);
+
+    return isEventDriven(name, queue)
+        ? replayEventDrivenApplication(application, beginTime, endTime)
+        : replayCronApplication(application, beginTime, endTime);
   }
 
   @Override
@@ -532,6 +642,6 @@ public class CosmosServiceImpl extends HessianServlet implements CosmosService {
   @Override
   public List<ApplicationRecord> getApplicationRecordsBySate(String queue, int state)
       throws SQLException {
-    return operator.getApplicationRecordsBySate(queue,state);
+    return operator.getApplicationRecordsBySate(queue, state);
   }
 }
