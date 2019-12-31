@@ -9,6 +9,7 @@ import java.io.Serializable;
  * @author yurun
  */
 public class Application implements Serializable {
+  public static final String EVENT_DRIVEN = "event-driven";
 
   private String name;
   private String queue;
@@ -22,8 +23,7 @@ public class Application implements Serializable {
   private String cron;
   private int timeout;
 
-  public Application() {
-  }
+  public Application() {}
 
   /**
    * Construct a application instance.
@@ -158,19 +158,36 @@ public class Application implements Serializable {
 
   @Override
   public String toString() {
-    final StringBuffer sb = new StringBuffer("Application{");
-    sb.append("name='").append(name).append('\'');
-    sb.append(", queue='").append(queue).append('\'');
-    sb.append(", user='").append(user).append('\'');
-    sb.append(", priority=").append(priority);
-    sb.append(", cores=").append(cores);
-    sb.append(", mems=").append(mems);
-    sb.append(", repository='").append(repository).append('\'');
-    sb.append(", tag='").append(tag).append('\'');
-    sb.append(", params='").append(params).append('\'');
-    sb.append(", cron='").append(cron).append('\'');
-    sb.append(", timeout=").append(timeout);
-    sb.append('}');
-    return sb.toString();
+    return "Application{"
+        + "name='"
+        + name
+        + '\''
+        + ", queue='"
+        + queue
+        + '\''
+        + ", user='"
+        + user
+        + '\''
+        + ", priority="
+        + priority
+        + ", cores="
+        + cores
+        + ", mems="
+        + mems
+        + ", repository='"
+        + repository
+        + '\''
+        + ", tag='"
+        + tag
+        + '\''
+        + ", params='"
+        + params
+        + '\''
+        + ", cron='"
+        + cron
+        + '\''
+        + ", timeout="
+        + timeout
+        + '}';
   }
 }
