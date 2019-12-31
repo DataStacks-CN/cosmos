@@ -11,7 +11,6 @@ import java.util.List;
 
 /** Cosmos Service. */
 public interface CosmosService {
-
   boolean connect();
 
   void add(Application application) throws Exception;
@@ -25,6 +24,8 @@ public interface CosmosService {
   void stop(String name, String queue) throws Exception;
 
   boolean isScheduled(String name, String queue) throws Exception;
+
+  boolean isEventDriven(String name, String queue) throws Exception;
 
   List<String> queues() throws Exception;
 
@@ -66,7 +67,5 @@ public interface CosmosService {
 
   ApplicationDependency createApplicationDependency();
 
-
-  List<ApplicationRecord> getApplicationRecordsBySate(String queue,int state) throws SQLException;
-
+  List<ApplicationRecord> getApplicationRecordsBySate(String queue, int state) throws SQLException;
 }
