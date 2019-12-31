@@ -230,6 +230,9 @@ public class SchedulerOperator {
     for (ApplicationRecord runningApplicationRecord : runningApplicationRecords) {
       Application application =
           getApplication(runningApplicationRecord.getName(), runningApplicationRecord.getQueue());
+      if (Objects.isNull(application)) {
+        continue;
+      }
 
       cores += application.getCores();
     }
@@ -255,6 +258,9 @@ public class SchedulerOperator {
     for (ApplicationRecord runningApplicationRecord : runningApplicationRecords) {
       Application application =
           getApplication(runningApplicationRecord.getName(), runningApplicationRecord.getQueue());
+      if (Objects.isNull(application)) {
+        continue;
+      }
 
       mems += application.getMems();
     }
