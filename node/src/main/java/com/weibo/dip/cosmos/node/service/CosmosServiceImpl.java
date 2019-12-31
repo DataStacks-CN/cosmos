@@ -5,6 +5,8 @@ import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.model.Container;
 import com.github.dockerjava.core.DockerClientBuilder;
 import com.google.common.base.Preconditions;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.weibo.dip.cosmos.model.Application;
 import com.weibo.dip.cosmos.model.ApplicationDependency;
 import com.weibo.dip.cosmos.model.ApplicationRecord;
@@ -28,8 +30,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.MapUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.CharEncoding;
 import org.apache.commons.lang.StringUtils;
@@ -60,6 +64,8 @@ public class CosmosServiceImpl extends HessianServlet implements CosmosService {
   private MessageQueue queue;
   private Scheduler scheduler;
   private SchedulerOperator operator;
+
+  private JsonParser parser = new JsonParser();
 
   /**
    * Construct a instance.
@@ -199,6 +205,52 @@ public class CosmosServiceImpl extends HessianServlet implements CosmosService {
     scheduler.deleteJob(jobKey);
 
     LOGGER.info("Application {}:{} stoped", name, queue);
+  }
+
+  @Override
+  public void call(String name, String queue, Date timestamp, Map<String, String> params)
+      throws Exception {
+    Preconditions.checkState(
+        StringUtils.isNotEmpty(name) && StringUtils.isNotEmpty(queue) && Objects.nonNull(timestamp),
+        "name, queue and timestamp must be specified");
+
+    Application application = get(name, queue);
+
+    Preconditions.checkState(
+        Objects.nonNull(application), "Application %s:%s not exist", name, queue);
+    Preconditions.checkState(
+        isEventDriven(name, queue), "Application %s:%s unsupport call operation", name, queue);
+
+    if (MapUtils.isNotEmpty(params)) {
+      JsonObject jsonParams = parser.parse(application.getParams()).getAsJsonObject();
+
+      params.forEach(jsonParams::addProperty);
+
+      application.setParams(jsonParams.toString());
+    }
+
+    Date now = new Date();
+
+    ApplicationRecord applicationRecord =
+        new ApplicationRecord(
+            application.getName(),
+            application.getQueue(),
+            IpUtil.getLocalhost(),
+            timestamp,
+            now,
+            ApplicationState.QUEUED);
+
+    ScheduleApplication scheduleApplication =
+        new ScheduleApplication(application, applicationRecord);
+
+    this.queue.produce(
+        GsonUtil.toJson(scheduleApplication),
+        scheduleApplication.getQueue(),
+        scheduleApplication.getPriority(),
+        now);
+    operator.addOrUpdateApplicationRecord(applicationRecord);
+
+    LOGGER.info("Application {} called", scheduleApplication.getUniqeName());
   }
 
   @Override

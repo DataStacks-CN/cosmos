@@ -10,6 +10,7 @@ import com.weibo.dip.cosmos.service.CosmosService;
 import java.sql.SQLException;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 /** Scheduler service. */
 public class CosmosClient implements CosmosService {
@@ -61,6 +62,12 @@ public class CosmosClient implements CosmosService {
   @Override
   public void stop(String name, String queue) throws Exception {
     schedulerService.stop(name, queue);
+  }
+
+  @Override
+  public void call(String name, String queue, Date timestamp, Map<String, String> params)
+      throws Exception {
+    schedulerService.call(name, queue, timestamp, params);
   }
 
   @Override

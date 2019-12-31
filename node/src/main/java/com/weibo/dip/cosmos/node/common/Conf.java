@@ -17,6 +17,7 @@ public class Conf {
 
   public static final String OPTION_START = "start";
   public static final String OPTION_STOP = "stop";
+  public static final String OPTION_CALL = "call";
   public static final String OPTION_APP = "app";
   public static final String OPTION_QUEUES = "queues";
   public static final String OPTION_APPS = "apps";

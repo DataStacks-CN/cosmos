@@ -8,6 +8,7 @@ import com.weibo.dip.cosmos.model.ScheduleApplication;
 import java.sql.SQLException;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 /** Cosmos Service. */
 public interface CosmosService {
@@ -22,6 +23,8 @@ public interface CosmosService {
   void start(String name, String queue) throws Exception;
 
   void stop(String name, String queue) throws Exception;
+
+  void call(String name, String queue, Date timestamp, Map<String, String> params) throws Exception;
 
   boolean isScheduled(String name, String queue) throws Exception;
 
