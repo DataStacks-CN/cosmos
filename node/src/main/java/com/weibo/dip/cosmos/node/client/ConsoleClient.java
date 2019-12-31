@@ -1,6 +1,7 @@
 package com.weibo.dip.cosmos.node.client;
 
 import com.google.common.base.Preconditions;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.weibo.dip.cosmos.model.Application;
@@ -17,7 +18,9 @@ import com.weibo.dip.durian.util.GsonUtil;
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -33,9 +36,7 @@ import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.CharEncoding;
 import org.apache.commons.lang.StringUtils;
 
-/**
- * Console node service.
- */
+/** Console node service. */
 public class ConsoleClient {
 
   private static final ClasspathProperties PROPERTIES;
@@ -98,6 +99,8 @@ public class ConsoleClient {
             .argName("name:queue")
             .required(false)
             .build());
+    group.addOption(
+        Option.builder(Conf.OPTION_CALL).hasArg(true).argName("call.json").required(false).build());
     group.addOption(
         Option.builder(Conf.OPTION_APP).hasArg(true).argName("name:queue").required(false).build());
     group.addOption(
@@ -274,9 +277,7 @@ public class ConsoleClient {
           new Application(
               name, queue, user, priority, cores, mems, repository, tag, params, cron, timeout));
 
-      System.out.println(String
-          .format("Application %s:%s updated", name,
-              queue));
+      System.out.println(String.format("Application %s:%s updated", name, queue));
     } else if (line.hasOption(Conf.OPTION_DELETE)) {
       String nameAndQueue = line.getOptionValue(Conf.OPTION_DELETE);
 
@@ -304,6 +305,46 @@ public class ConsoleClient {
       client.stop(name, queue);
 
       System.out.println(String.format("Application %s:%s stoped", name, queue));
+    } else if (line.hasOption(Conf.OPTION_CALL)) {
+      String jsonPath = line.getOptionValue(Conf.OPTION_CALL);
+
+      String json =
+          StringUtils.join(
+              FileUtils.readLines(new File(jsonPath), CharEncoding.UTF_8), Symbols.NEWLINE);
+
+      JsonParser jsonParser = new JsonParser();
+
+      JsonObject jsonObject = jsonParser.parse(json).getAsJsonObject();
+
+      String name = jsonObject.getAsJsonPrimitive("name").getAsString();
+      String queue = jsonObject.getAsJsonPrimitive("queue").getAsString();
+
+      SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
+      Date timestamp = format.parse(jsonObject.getAsJsonPrimitive("timestamp").getAsString());
+
+      Map<String, String> params = new HashMap<>();
+
+      JsonObject jsonParams = jsonObject.getAsJsonObject("params");
+
+      jsonParams
+          .entrySet()
+          .forEach(
+              entry -> {
+                String key = entry.getKey();
+                JsonElement element = entry.getValue();
+
+                Preconditions.checkState(
+                    element.isJsonPrimitive() && element.getAsJsonPrimitive().isString(),
+                    "params must be {'key1': 'value1', 'key2': 'value2', ...}");
+
+                params.put(key, element.getAsString());
+              });
+
+      client.call(name, queue, timestamp, params);
+
+      System.out.println(
+          String.format("Application %s:%s %s called", name, queue, format.format(timestamp)));
     } else if (line.hasOption(Conf.OPTION_APP)) {
       String nameAndQueue = line.getOptionValue(Conf.OPTION_APP);
 
@@ -341,7 +382,8 @@ public class ConsoleClient {
             ArrayUtils.toString(application.getParams()),
             application.getCron(),
             String.valueOf(application.getTimeout()),
-            client.isScheduled(application.getName(), application.getQueue()) ? "started"
+            client.isScheduled(application.getName(), application.getQueue())
+                ? "started"
                 : "stoped");
       }
 
@@ -395,7 +437,8 @@ public class ConsoleClient {
               ArrayUtils.toString(application.getParams()),
               application.getCron(),
               String.valueOf(application.getTimeout()),
-              client.isScheduled(application.getName(), application.getQueue()) ? "started"
+              client.isScheduled(application.getName(), application.getQueue())
+                  ? "started"
                   : "stoped");
         }
       }

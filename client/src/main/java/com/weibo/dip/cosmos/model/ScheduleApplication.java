@@ -40,10 +40,6 @@ public class ScheduleApplication extends Application implements Serializable {
     return applicationRecord;
   }
 
-  public void setApplicationRecord(ApplicationRecord applicationRecord) {
-    this.applicationRecord = applicationRecord;
-  }
-
   @Override
   public String getUniqeName() {
     return super.getUniqeName()
