@@ -29,6 +29,7 @@ import java.net.URLEncoder;
 import java.net.UnknownHostException;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -39,6 +40,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.CharEncoding;
@@ -74,6 +76,8 @@ public class AppExecutor {
 
   private int cores;
   private int mems;
+
+  private List<String> labels;
 
   private AtomicInteger usedCores = new AtomicInteger(0);
   private AtomicInteger usedMems = new AtomicInteger(0);
@@ -126,6 +130,10 @@ public class AppExecutor {
         LOGGER.debug("Message queue is empty!");
 
         return null;
+      }
+
+      if (CollectionUtils.isNotEmpty(labels)) {
+        queues = queues.stream().filter(labels::contains).collect(Collectors.toList());
       }
 
       List<QueueResource> queueResources = new ArrayList<>();
@@ -728,6 +736,11 @@ public class AppExecutor {
 
     cores = properties.getInt("server.cores");
     mems = properties.getInt("server.mems");
+
+    String labels = properties.getString("server.labels").trim();
+    if (StringUtils.isNotEmpty(labels)) {
+      this.labels = Arrays.asList(labels.split(Symbols.COMMA, -1));
+    }
 
     this.queue = queue;
     this.operator = operator;
