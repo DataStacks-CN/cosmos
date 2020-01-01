@@ -215,46 +215,77 @@ public class AppExecutor {
           int fromSeconds = dependency.getFromSeconds();
           int toSeconds = dependency.getToSeconds();
 
-          List<Date> fireTimes =
-              TriggerUtils.computeFireTimesBetween(
-                  (OperableTrigger)
-                      TriggerBuilder.newTrigger()
-                          .withSchedule(CronScheduleBuilder.cronSchedule(dependedCron))
-                          .build(),
-                  null,
-                  DateUtils.addSeconds(scheduleTime, -fromSeconds), // include
-                  DateUtils.addSeconds(scheduleTime, -toSeconds)); // include
-          if (CollectionUtils.isEmpty(fireTimes)) {
-            LOGGER.info(
-                "Application {} depends on {}({}), but the lap [{},{}] is too close",
-                scheduleApplication.getUniqeName(),
-                dependedApplication.getUniqeName(),
-                dependedCron,
-                fromSeconds,
-                toSeconds);
+          Date dependFromTime = DateUtils.addSeconds(scheduleTime, -fromSeconds);
+          Date dependToTime = DateUtils.addSeconds(scheduleTime, -toSeconds);
 
-            continue;
-          }
-
-          for (Date fireTime : fireTimes) {
-            ApplicationRecord record =
-                operator.getApplicationRecord(dependedName, dependedQueue, fireTime);
-            if (Objects.isNull(record)) {
+          if (Application.EVENT_DRIVEN.equals(dependedCron)) {
+            List<ApplicationRecord> records =
+                operator.getApplicationRecords(
+                    dependedName, dependedQueue, dependFromTime, dependToTime);
+            if (CollectionUtils.isEmpty(records)) {
               LOGGER.info(
-                  "Application {} depends on {}({}), but no record found",
+                  "Application {} depends on {}, but no records found in lap[{}, {}]",
                   scheduleApplication.getUniqeName(),
                   dependedApplication.getUniqeName(),
-                  DatetimeUtil.ISO_8601_EXTENDED_DATETIME_FORMAT.format(fireTime));
+                  DatetimeUtil.COMMON_DATETIME_FORMAT.format(dependFromTime),
+                  DatetimeUtil.COMMON_DATETIME_FORMAT.format(dependToTime));
 
               return false;
-            } else if (record.getState() != ApplicationState.SUCCESS) {
+            }
+
+            for (ApplicationRecord record : records) {
+              if (record.getState() != ApplicationState.SUCCESS) {
+                LOGGER.info(
+                    "Application {} depends on {}({}), but record shows {}",
+                    scheduleApplication.getUniqeName(),
+                    dependedApplication.getUniqeName(),
+                    DatetimeUtil.COMMON_DATETIME_FORMAT.format(record.getScheduleTime()),
+                    record.getState().name());
+                return false;
+              }
+            }
+          } else {
+            List<Date> fireTimes =
+                TriggerUtils.computeFireTimesBetween(
+                    (OperableTrigger)
+                        TriggerBuilder.newTrigger()
+                            .withSchedule(CronScheduleBuilder.cronSchedule(dependedCron))
+                            .build(),
+                    null,
+                    dependFromTime, // include
+                    dependToTime); // include
+            if (CollectionUtils.isEmpty(fireTimes)) {
               LOGGER.info(
-                  "Application {} depends on {}({}), but record shows {}",
+                  "Application {} depends on {}({}), but the lap [{},{}] is too close",
                   scheduleApplication.getUniqeName(),
                   dependedApplication.getUniqeName(),
-                  DatetimeUtil.ISO_8601_EXTENDED_DATETIME_FORMAT.format(fireTime),
-                  record.getState().name());
-              return false;
+                  dependedCron,
+                  fromSeconds,
+                  toSeconds);
+
+              continue;
+            }
+
+            for (Date fireTime : fireTimes) {
+              ApplicationRecord record =
+                  operator.getApplicationRecord(dependedName, dependedQueue, fireTime);
+              if (Objects.isNull(record)) {
+                LOGGER.info(
+                    "Application {} depends on {}({}), but no record found",
+                    scheduleApplication.getUniqeName(),
+                    dependedApplication.getUniqeName(),
+                    DatetimeUtil.COMMON_DATETIME_FORMAT.format(fireTime));
+
+                return false;
+              } else if (record.getState() != ApplicationState.SUCCESS) {
+                LOGGER.info(
+                    "Application {} depends on {}({}), but record shows {}",
+                    scheduleApplication.getUniqeName(),
+                    dependedApplication.getUniqeName(),
+                    DatetimeUtil.COMMON_DATETIME_FORMAT.format(fireTime),
+                    record.getState().name());
+                return false;
+              }
             }
           }
         }
@@ -272,7 +303,6 @@ public class AppExecutor {
 
     @Override
     public void run() {
-
       while (!isInterrupted()) {
         // resource exhaustion?
         if (usedCores.get() >= cores || usedMems.get() >= mems) {
@@ -314,7 +344,7 @@ public class AppExecutor {
           for (QueueResource queueResource : sortedQueueResources) {
             String queueName = queueResource.getQueue();
 
-            // LOGGER.debug("Queue {} uses the least resources", queueName);
+            LOGGER.debug("Queue {} uses the least resources", queueName);
 
             // get a message from the queue that uses the least resources
             Message message = queue.consume(queueName);
@@ -715,7 +745,6 @@ public class AppExecutor {
       LOGGER.warn("Update host error, keep default");
     }
     operator.addOrUpdateApplicationRecord(applicationRecord);
-
   }
 
   /** start executor. */
