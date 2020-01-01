@@ -10,12 +10,15 @@ import com.github.dockerjava.core.DockerClientBuilder;
 import com.github.dockerjava.core.command.LogContainerResultCallback;
 import com.github.dockerjava.core.command.PullImageResultCallback;
 import com.google.common.base.Preconditions;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.weibo.dip.cosmos.model.Application;
 import com.weibo.dip.cosmos.model.ApplicationDependency;
 import com.weibo.dip.cosmos.model.ApplicationRecord;
 import com.weibo.dip.cosmos.model.ApplicationState;
 import com.weibo.dip.cosmos.model.Message;
 import com.weibo.dip.cosmos.model.ScheduleApplication;
+import com.weibo.dip.cosmos.node.common.Conf;
 import com.weibo.dip.cosmos.node.db.SchedulerOperator;
 import com.weibo.dip.cosmos.node.queue.MessageQueue;
 import com.weibo.dip.durian.ClasspathProperties;
@@ -84,6 +87,8 @@ public class AppExecutor {
 
   private MessageQueue queue;
   private SchedulerOperator operator;
+
+  private JsonParser jsonParser = new JsonParser();
 
   private static class QueueResource {
 
@@ -169,6 +174,34 @@ public class AppExecutor {
     }
 
     private boolean checkRunningConditions(ScheduleApplication scheduleApplication) {
+      // check sync
+      try {
+        JsonObject params = jsonParser.parse(scheduleApplication.getParams()).getAsJsonObject();
+
+        if (params.has(Conf.COSMOS_APP_SYNC)
+            && params.getAsJsonPrimitive(Conf.COSMOS_APP_SYNC).getAsBoolean()) {
+          List<ApplicationRecord> records =
+              operator.getApplicationRecordsBySate(
+                  scheduleApplication.getName(),
+                  scheduleApplication.getQueue(),
+                  ApplicationState.RUNNING.ordinal());
+          if (CollectionUtils.isNotEmpty(records)) {
+            LOGGER.info(
+                "Application {} requires sync execution, but some records are running",
+                scheduleApplication.getUniqeName());
+
+            return false;
+          }
+        }
+      } catch (Exception e) {
+        LOGGER.error(
+            "Application {} check sync error: {}",
+            scheduleApplication.getUniqeName(),
+            ExceptionUtils.getStackTrace(e));
+
+        return false;
+      }
+
       // check cores
       if (usedCores.get() + scheduleApplication.getCores() > cores) {
         LOGGER.info(

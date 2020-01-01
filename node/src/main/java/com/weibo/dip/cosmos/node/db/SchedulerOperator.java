@@ -337,6 +337,21 @@ public class SchedulerOperator {
   }
 
   /**
+   * Get application records of the specified name, queue and state.
+   *
+   * @param name name
+   * @param queue queue
+   * @return application records
+   * @throws SQLException if access db error
+   */
+  public List<ApplicationRecord> getApplicationRecordsBySate(String name, String queue, int state)
+      throws SQLException {
+    String sql = "select * from records where name = ? and queue = ? and state = ?";
+
+    return queryRunner.query(sql, new ApplicationRecordHandler(), name, queue, state);
+  }
+
+  /**
    * Add or update a application dependency.
    *
    * @param dependency application dependency
