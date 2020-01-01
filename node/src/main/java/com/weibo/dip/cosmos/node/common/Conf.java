@@ -32,4 +32,6 @@ public class Conf {
   public static final String OPTION_DELETE_QUEUED = "deleteQueued";
   public static final String OPTION_KILL = "kill";
   public static final String OPTION_LOG = "log";
+
+  public static final String COSMOS_APP_SYNC = "cosmos.app.sync";
 }
