@@ -158,7 +158,7 @@ public class CosmosServiceImpl extends HessianServlet implements CosmosService {
     Preconditions.checkState(
         Objects.nonNull(application), "Application %s:%s not exist", name, queue);
     Preconditions.checkState(
-        !isEventDriven(name, queue), "Application %s:%s unsupport start operation", name, queue);
+        !isEventDriven(name, queue), "Application(Event-Driven) %s:%s unsupport start operation", name, queue);
     Preconditions.checkState(
         !isScheduled(name, queue), "Application %s:%s already started", name, queue);
 
@@ -196,7 +196,7 @@ public class CosmosServiceImpl extends HessianServlet implements CosmosService {
     Preconditions.checkState(
         operator.existApplication(name, queue), "Application %s:%s not exist", name, queue);
     Preconditions.checkState(
-        !isEventDriven(name, queue), "Application %s:%s unsupport stop operation", name, queue);
+        !isEventDriven(name, queue), "Application(Event-Driven) %s:%s unsupport stop operation", name, queue);
 
     JobKey jobKey = new JobKey(name, queue);
     TriggerKey triggerKey = new TriggerKey(name, queue);
