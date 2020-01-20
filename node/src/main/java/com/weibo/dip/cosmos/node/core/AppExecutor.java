@@ -400,7 +400,7 @@ public class AppExecutor {
                 interrupt();
               }
 
-              break;
+              continue;
             }
 
             // deserialize message to application
