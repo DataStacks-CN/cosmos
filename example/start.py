@@ -40,7 +40,7 @@ if __name__ == '__main__':
 
     cmd = 'date > {log_dir}/container.log 2>&1'.format(log_dir=log_dir)
 
-    logging.info(cmd)
+    logging.info('cmd: %s', cmd)
 
     (status, output) = commands.getstatusoutput(cmd)
 
