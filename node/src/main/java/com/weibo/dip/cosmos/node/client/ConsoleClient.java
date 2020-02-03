@@ -1,7 +1,6 @@
 package com.weibo.dip.cosmos.node.client;
 
 import com.google.common.base.Preconditions;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.weibo.dip.cosmos.model.Application;
@@ -18,9 +17,7 @@ import com.weibo.dip.durian.util.GsonUtil;
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -323,25 +320,9 @@ public class ConsoleClient {
 
       Date timestamp = format.parse(jsonObject.getAsJsonPrimitive("timestamp").getAsString());
 
-      Map<String, String> params = new HashMap<>();
+      String jsonParams = jsonObject.getAsJsonObject("params").toString();
 
-      JsonObject jsonParams = jsonObject.getAsJsonObject("params");
-
-      jsonParams
-          .entrySet()
-          .forEach(
-              entry -> {
-                String key = entry.getKey();
-                JsonElement element = entry.getValue();
-
-                Preconditions.checkState(
-                    element.isJsonPrimitive() && element.getAsJsonPrimitive().isString(),
-                    "params must be {'key1': 'value1', 'key2': 'value2', ...}");
-
-                params.put(key, element.getAsString());
-              });
-
-      client.call(name, queue, timestamp, params);
+      client.call(name, queue, timestamp, jsonParams);
 
       System.out.println(
           String.format("Application %s:%s %s called", name, queue, format.format(timestamp)));

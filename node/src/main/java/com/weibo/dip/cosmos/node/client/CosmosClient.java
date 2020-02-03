@@ -71,6 +71,11 @@ public class CosmosClient implements CosmosService {
   }
 
   @Override
+  public void call(String name, String queue, Date timestamp, String jsonParams) throws Exception {
+    schedulerService.call(name, queue, timestamp, jsonParams);
+  }
+
+  @Override
   public boolean isScheduled(String name, String queue) throws Exception {
     return schedulerService.isScheduled(name, queue);
   }

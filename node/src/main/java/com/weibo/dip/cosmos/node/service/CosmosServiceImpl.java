@@ -6,7 +6,6 @@ import com.github.dockerjava.api.model.Container;
 import com.github.dockerjava.core.DockerClientBuilder;
 import com.google.common.base.Preconditions;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import com.weibo.dip.cosmos.model.Application;
 import com.weibo.dip.cosmos.model.ApplicationDependency;
 import com.weibo.dip.cosmos.model.ApplicationRecord;
@@ -33,7 +32,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.MapUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.CharEncoding;
 import org.apache.commons.lang.StringUtils;
@@ -64,8 +62,6 @@ public class CosmosServiceImpl extends HessianServlet implements CosmosService {
   private MessageQueue queue;
   private Scheduler scheduler;
   private SchedulerOperator operator;
-
-  private JsonParser parser = new JsonParser();
 
   /**
    * Construct a instance.
@@ -216,6 +212,11 @@ public class CosmosServiceImpl extends HessianServlet implements CosmosService {
   @Override
   public void call(String name, String queue, Date timestamp, Map<String, String> params)
       throws Exception {
+    call(name, queue, timestamp, GsonUtil.toJson(params));
+  }
+
+  @Override
+  public void call(String name, String queue, Date timestamp, String jsonParams) throws Exception {
     Preconditions.checkState(
         StringUtils.isNotEmpty(name) && StringUtils.isNotEmpty(queue) && Objects.nonNull(timestamp),
         "name, queue and timestamp must be specified");
@@ -227,12 +228,13 @@ public class CosmosServiceImpl extends HessianServlet implements CosmosService {
     Preconditions.checkState(
         isEventDriven(name, queue), "Application %s:%s unsupport call operation", name, queue);
 
-    if (MapUtils.isNotEmpty(params)) {
-      JsonObject jsonParams = parser.parse(application.getParams()).getAsJsonObject();
+    if (StringUtils.isNotEmpty(jsonParams)) {
+      JsonObject newParams = GsonUtil.parse(jsonParams).getAsJsonObject();
+      JsonObject existParams = GsonUtil.parse(application.getParams()).getAsJsonObject();
 
-      params.forEach(jsonParams::addProperty);
+      newParams.entrySet().forEach(entry -> existParams.add(entry.getKey(), entry.getValue()));
 
-      application.setParams(jsonParams.toString());
+      application.setParams(existParams.toString());
     }
 
     Date now = new Date();
