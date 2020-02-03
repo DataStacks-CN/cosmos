@@ -26,6 +26,8 @@ public interface CosmosService {
 
   void call(String name, String queue, Date timestamp, Map<String, String> params) throws Exception;
 
+  void call(String name, String queue, Date timestamp, String jsonParams) throws Exception;
+
   boolean isScheduled(String name, String queue) throws Exception;
 
   boolean isEventDriven(String name, String queue) throws Exception;
