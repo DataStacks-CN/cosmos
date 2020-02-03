@@ -1,1 +1,1 @@
-docker build -t docker.io/cosmos_example_application:0.0.1 /data0/workspace/cosmos/example
+docker build -t docker.io/cosmos_example_application:0.0.1 {HOME}/cosmos/example
