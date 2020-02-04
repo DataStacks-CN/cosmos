@@ -1,7 +1,13 @@
 package com.weibo.dip.cosmos.model;
 
+import com.google.gson.JsonObject;
+import com.weibo.dip.cosmos.Conf;
 import com.weibo.dip.durian.Symbols;
+import com.weibo.dip.durian.util.GsonUtil;
 import java.io.Serializable;
+import org.apache.commons.lang.exception.ExceptionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Application.
@@ -10,6 +16,8 @@ import java.io.Serializable;
  */
 public class Application implements Serializable {
   public static final String EVENT_DRIVEN = "event-driven";
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(Application.class);
 
   private String name;
   private String queue;
@@ -136,6 +144,10 @@ public class Application implements Serializable {
     return params;
   }
 
+  public JsonObject getJsonParams() {
+    return GsonUtil.parse(params).getAsJsonObject();
+  }
+
   public void setParams(String params) {
     this.params = params;
   }
@@ -154,6 +166,66 @@ public class Application implements Serializable {
 
   public void setTimeout(int timeout) {
     this.timeout = timeout;
+  }
+
+  /**
+   * Get application parallelism.
+   *
+   * @return application parallelism
+   */
+  public int getParallelism() {
+    try {
+      return getJsonParams().has(Conf.COSMOS_APP_PARALLELISM)
+          ? getJsonParams().getAsJsonPrimitive(Conf.COSMOS_APP_PARALLELISM).getAsInt()
+          : Integer.MAX_VALUE;
+    } catch (Exception e) {
+      LOGGER.error(
+          "Application {} get paralellism error: {}",
+          getUniqeName(),
+          ExceptionUtils.getFullStackTrace(e));
+
+      return Integer.MAX_VALUE;
+    }
+  }
+
+  /**
+   * Get application disk space.
+   *
+   * @return application disk space
+   */
+  public int getDiskSpace() {
+    try {
+      return getJsonParams().has(Conf.COSMOS_APP_DISK_SPACE)
+          ? getJsonParams().getAsJsonPrimitive(Conf.COSMOS_APP_DISK_SPACE).getAsInt()
+          : 0;
+    } catch (Exception e) {
+      LOGGER.error(
+          "Application {} get disk space error: {}",
+          getUniqeName(),
+          ExceptionUtils.getFullStackTrace(e));
+
+      return 0;
+    }
+  }
+
+  /**
+   * Get application net flow.
+   *
+   * @return application net flow
+   */
+  public int getNetFlow() {
+    try {
+      return getJsonParams().has(Conf.COSMOS_APP_NET_FLOW)
+          ? getJsonParams().getAsJsonPrimitive(Conf.COSMOS_APP_NET_FLOW).getAsInt()
+          : 0;
+    } catch (Exception e) {
+      LOGGER.error(
+          "Application {} get net flow error: {}",
+          getUniqeName(),
+          ExceptionUtils.getFullStackTrace(e));
+
+      return 0;
+    }
   }
 
   @Override

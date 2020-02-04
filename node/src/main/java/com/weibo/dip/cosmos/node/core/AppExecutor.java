@@ -10,7 +10,6 @@ import com.github.dockerjava.core.DockerClientBuilder;
 import com.github.dockerjava.core.command.LogContainerResultCallback;
 import com.github.dockerjava.core.command.PullImageResultCallback;
 import com.google.common.base.Preconditions;
-import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.weibo.dip.cosmos.model.Application;
 import com.weibo.dip.cosmos.model.ApplicationDependency;
@@ -18,7 +17,6 @@ import com.weibo.dip.cosmos.model.ApplicationRecord;
 import com.weibo.dip.cosmos.model.ApplicationState;
 import com.weibo.dip.cosmos.model.Message;
 import com.weibo.dip.cosmos.model.ScheduleApplication;
-import com.weibo.dip.cosmos.node.common.Conf;
 import com.weibo.dip.cosmos.node.db.SchedulerOperator;
 import com.weibo.dip.cosmos.node.queue.MessageQueue;
 import com.weibo.dip.durian.ClasspathProperties;
@@ -80,10 +78,16 @@ public class AppExecutor {
   private int cores;
   private int mems;
 
+  private int diskSpace;
+  private int netflow;
+
   private List<String> labels;
 
   private AtomicInteger usedCores = new AtomicInteger(0);
   private AtomicInteger usedMems = new AtomicInteger(0);
+
+  private AtomicInteger usedDiskSpace = new AtomicInteger(0);
+  private AtomicInteger usedNetFlow = new AtomicInteger(0);
 
   private MessageQueue queue;
   private SchedulerOperator operator;
@@ -174,28 +178,27 @@ public class AppExecutor {
     }
 
     private boolean checkRunningConditions(ScheduleApplication scheduleApplication) {
-      // check sync
+      // check parallelism
       try {
-        JsonObject params = jsonParser.parse(scheduleApplication.getParams()).getAsJsonObject();
+        List<ApplicationRecord> records =
+            operator.getApplicationRecordsBySate(
+                scheduleApplication.getName(),
+                scheduleApplication.getQueue(),
+                ApplicationState.RUNNING.ordinal());
 
-        if (params.has(Conf.COSMOS_APP_SYNC)
-            && params.getAsJsonPrimitive(Conf.COSMOS_APP_SYNC).getAsBoolean()) {
-          List<ApplicationRecord> records =
-              operator.getApplicationRecordsBySate(
-                  scheduleApplication.getName(),
-                  scheduleApplication.getQueue(),
-                  ApplicationState.RUNNING.ordinal());
-          if (CollectionUtils.isNotEmpty(records)) {
-            LOGGER.info(
-                "Application {} requires sync execution, but some records are running",
-                scheduleApplication.getUniqeName());
+        if (CollectionUtils.isNotEmpty(records)
+            && records.size() >= scheduleApplication.getParallelism()) {
+          LOGGER.info(
+              "Application {} running records({}) exceed parallelism({})",
+              scheduleApplication.getUniqeName(),
+              records.size(),
+              scheduleApplication.getParallelism());
 
-            return false;
-          }
+          return false;
         }
       } catch (Exception e) {
         LOGGER.error(
-            "Application {} check sync error: {}",
+            "Application {} check parallelism error: {}",
             scheduleApplication.getUniqeName(),
             ExceptionUtils.getStackTrace(e));
 
@@ -222,6 +225,30 @@ public class AppExecutor {
             scheduleApplication.getMems(),
             usedMems.get(),
             mems);
+
+        return false;
+      }
+
+      // check disk space
+      if (usedDiskSpace.get() + scheduleApplication.getDiskSpace() > diskSpace) {
+        LOGGER.info(
+            "Insufficient disk space required by the application {}, need: {}, used: {}, total: {}",
+            scheduleApplication.getUniqeName(),
+            scheduleApplication.getDiskSpace(),
+            usedDiskSpace.get(),
+            diskSpace);
+
+        return false;
+      }
+
+      // check net flow
+      if (usedNetFlow.get() + scheduleApplication.getNetFlow() > netflow) {
+        LOGGER.info(
+            "Insufficient net flow required by the application {}, need: {}, used: {}, total: {}",
+            scheduleApplication.getUniqeName(),
+            scheduleApplication.getNetFlow(),
+            usedNetFlow.get(),
+            netflow);
 
         return false;
       }
@@ -416,6 +443,9 @@ public class AppExecutor {
               // run
               usedCores.addAndGet(scheduleApplication.getCores());
               usedMems.addAndGet(scheduleApplication.getMems());
+
+              usedDiskSpace.addAndGet(scheduleApplication.getDiskSpace());
+              usedNetFlow.addAndGet(scheduleApplication.getNetFlow());
 
               LOGGER.info(
                   "Application {} meet running conditions, submit to run",
@@ -740,6 +770,9 @@ public class AppExecutor {
         usedCores.addAndGet(-scheduleApplication.getCores());
         usedMems.addAndGet(-scheduleApplication.getMems());
 
+        usedDiskSpace.addAndGet(-scheduleApplication.getDiskSpace());
+        usedNetFlow.addAndGet(-scheduleApplication.getNetFlow());
+
         try {
           dockerClient.close();
           LOGGER.info("Application {} docker service closed", scheduleApplication.getUniqeName());
@@ -769,6 +802,9 @@ public class AppExecutor {
 
     cores = properties.getInt("server.cores");
     mems = properties.getInt("server.mems");
+
+    diskSpace = properties.getInt("server.disk.space");
+    netflow = properties.getInt("server.net.flow");
 
     String labels = properties.getString("server.labels").trim();
     if (StringUtils.isNotEmpty(labels)) {
