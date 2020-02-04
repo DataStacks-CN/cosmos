@@ -33,6 +33,7 @@ Cosmos是一个分布式调度系统，应用以Docker的形式进行发布与�
 ## 构建
    
 mkdir /data0/workspace
+
 cd /data0/workspace
 
 git clone https://github.com/weibodip/cosmos.git
