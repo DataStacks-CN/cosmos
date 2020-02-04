@@ -1,4 +1,4 @@
-package com.weibo.dip.cosmos.node.common;
+package com.weibo.dip.cosmos;
 
 /**
  * Conf.
@@ -34,4 +34,9 @@ public class Conf {
   public static final String OPTION_LOG = "log";
 
   public static final String COSMOS_APP_SYNC = "cosmos.app.sync";
+
+  public static final String COSMOS_APP_PARALLELISM = "cosmos.app.parallelism";
+
+  public static final String COSMOS_APP_DISK_SPACE = "cosmos.app.disk.space";
+  public static final String COSMOS_APP_NET_FLOW = "cosmos.app.net.flow";
 }

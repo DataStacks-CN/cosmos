@@ -1,6 +1,6 @@
 package com.weibo.dip.cosmos.node;
 
-import com.weibo.dip.cosmos.node.common.Conf;
+import com.weibo.dip.cosmos.Conf;
 import com.weibo.dip.cosmos.node.core.AppExecutor;
 import com.weibo.dip.cosmos.node.db.SchedulerDataSource;
 import com.weibo.dip.cosmos.node.db.SchedulerDataSourceFactory;
