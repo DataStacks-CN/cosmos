@@ -33,8 +33,6 @@ public class Conf {
   public static final String OPTION_KILL = "kill";
   public static final String OPTION_LOG = "log";
 
-  public static final String COSMOS_APP_SYNC = "cosmos.app.sync";
-
   public static final String COSMOS_APP_PARALLELISM = "cosmos.app.parallelism";
 
   public static final String COSMOS_APP_DISK_SPACE = "cosmos.app.disk.space";

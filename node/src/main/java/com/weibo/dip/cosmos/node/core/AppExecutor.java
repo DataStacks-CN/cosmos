@@ -806,6 +806,13 @@ public class AppExecutor {
     diskSpace = properties.getInt("server.disk.space");
     netflow = properties.getInt("server.net.flow");
 
+    LOGGER.info(
+        "CPU: {} cores, MEM: {} MB, Disk Space: {} MB, Net Flow: {} MB",
+        cores,
+        mems,
+        diskSpace,
+        netflow);
+
     String labels = properties.getString("server.labels").trim();
     if (StringUtils.isNotEmpty(labels)) {
       this.labels = Arrays.asList(labels.split(Symbols.COMMA, -1));
